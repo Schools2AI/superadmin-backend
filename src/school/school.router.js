@@ -6,11 +6,16 @@ import {
     deleteSchoolController,
     getSchoolDetailsController,
 } from "./school.controller.js";
+import { RBAC } from "../middleware/RBAC.middleware.js";
 const router = express.Router();
 
-router.get("/all-school-details", getAllSchoolDetailsController);
+router.get(
+    "/all-school-details",
+    RBAC("SCHOOL:VIEW"),
+    getAllSchoolDetailsController,
+);
 router.get("/view/:id", getSchoolDetailsController);
-router.post("/create", createNewSchoolController);
+router.post("/create", RBAC("SCHOOL:CREATE"), createNewSchoolController);
 router.patch("/update/:id", updateSchoolFieldController);
 router.delete("/delete/:id", deleteSchoolController);
 

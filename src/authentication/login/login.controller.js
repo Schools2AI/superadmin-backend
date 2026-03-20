@@ -6,13 +6,13 @@ export const loginUserController = async (req, res) => {
 
         const { token } = await loginUser(userCredential);
 
-        res.cookie("token", token, {
-            httpOnly: true,
-            maxAge: 60 * 60 * 1000,
-            path: "/",
-        });
+        // res.cookie("token", token, {
+        //     httpOnly: true,
+        //     maxAge: 60 * 60 * 1000,
+        //     path: "/",
+        // });
 
-        res.status(200).json({ isSuccess: true });
+        res.status(200).json({ isSuccess: true, token });
     } catch (error) {
         const status = error.status || 500;
         const message = error.message || "Something went wrong";

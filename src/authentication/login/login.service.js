@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { findUserByEmail, findUserByMobile } from "../../model/user.model.js";
+import { fetchPermissionsById } from "../../model/permission.model.js";
 import {
     insertOtp,
     findOtp,
@@ -30,10 +31,14 @@ export const loginUser = async (userCredential) => {
         throw { status: 400, message: "Incorrect password" };
     }
 
+    const permissions = await fetchPermissionsById([user.role_id]);
+    const userPermissions = permissions.map(({ name }) => name);
+    console.log(userPermissions);
+
     const token = jwt.sign(
-        { mobile: user.mobile },
+        { userPermissions },
         process.env.JWT_SECRET || "secret key",
-        { expiresIn: "1h" }
+        { expiresIn: "1h" },
     );
 
     return { token };
@@ -82,7 +87,7 @@ export const verifyOtp = async ({ mobile_no, otp }) => {
                 const token = jwt.sign(
                     { mobile: mobile_no },
                     process.env.JWT_SECRET,
-                    { expiresIn: "1h" }
+                    { expiresIn: "1h" },
                 );
                 removeExpiredOtp();
                 return token;
