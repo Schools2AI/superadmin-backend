@@ -36,7 +36,7 @@ export const createNewSchool = async (newSchoolDetails) => {
         throw { status: 400, message: error.message };
     }
 
-    console.log(newSchoolDetails);
+    // console.log(newSchoolDetails);
     const schoolDetailsArray = [
         newSchoolDetails.schoolName, // school_name
         newSchoolDetails.country, // country
@@ -71,7 +71,7 @@ export const createNewSchool = async (newSchoolDetails) => {
     ];
     const result = await insertUser(newUserArray);
 
-    console.log(result);
+    // console.log(result);
 
     return { email: newSchoolDetails.email, password };
 };

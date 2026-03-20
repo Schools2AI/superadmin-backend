@@ -8,9 +8,10 @@ export const createFeatureController = async (req, res) => {
         const status = await createFeature(req.body);
         res.status(200).json(status);
     } catch (error) {
-        const status = error.status || 500;
-        const message = error.message || "something went wrong";
-        res.status(status).send(message);
+        return res.status(error.status || 500).json({
+            success: false,
+            message: error.message || "Internal Server Error",
+        });
     }
 };
 
@@ -19,9 +20,10 @@ export const getFeatureController = async (req, res) => {
         const features = await getFeature(req.params);
         res.status(200).json(features);
     } catch (error) {
-        const status = error.status || 500;
-        const message = error.message || "something went wrong";
-        res.status(status).send(message);
+        return res.status(error.status || 500).json({
+            success: false,
+            message: error.message || "Internal Server Error",
+        });
     }
 };
 
@@ -30,8 +32,9 @@ export const toggleFeatureController = async (req, res) => {
         const features = await toggleFeature(req.body);
         res.status(200).json(features);
     } catch (error) {
-        const status = error.status || 500;
-        const message = error.message || "something went wrong";
-        res.status(status).send(message);
+        return res.status(error.status || 500).json({
+            success: false,
+            message: error.message || "Internal Server Error",
+        });
     }
 };

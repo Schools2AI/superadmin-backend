@@ -10,9 +10,10 @@ export const getAllSchoolDetailsController = async (req, res) => {
         const schoolDetails = await getAllSchoolDetails();
         res.status(200).json(schoolDetails);
     } catch (error) {
-        const status = error.status || 500;
-        const message = error.message || "Something went wrong";
-        res.status(status).send(message);
+        return res.status(error.status || 500).json({
+            success: false,
+            message: error.message || "Internal Server Error",
+        });
     }
 };
 
@@ -21,9 +22,10 @@ export const getSchoolDetailsController = async (req, res) => {
         const schoolDetails = await getSchoolDetails(req.params);
         res.status(200).json(schoolDetails);
     } catch (error) {
-        const status = error.status || 500;
-        const message = error.message || "Something went wrong";
-        res.status(status).send(message);
+        return res.status(error.status || 500).json({
+            success: false,
+            message: error.message || "Internal Server Error",
+        });
     }
 };
 
@@ -33,9 +35,10 @@ export const createNewSchoolController = async (req, res) => {
         const credential = await createNewSchool(newSchoolDetails);
         res.status(200).json(credential);
     } catch (error) {
-        const status = error.status || 500;
-        const message = error.message || "Something went wrong";
-        res.status(status).send(message);
+        return res.status(error.status || 500).json({
+            success: false,
+            message: error.message || "Internal Server Error",
+        });
     }
 };
 
@@ -46,9 +49,10 @@ export const updateSchoolFieldController = async (req, res) => {
         const status = await updateSchoolField(schoolId, field, value);
         res.status(200).json(status);
     } catch (error) {
-        const status = error.status || 500;
-        const message = error.message || "Something went wrong";
-        res.status(status).send(message);
+        return res.status(error.status || 500).json({
+            success: false,
+            message: error.message || "Internal Server Error",
+        });
     }
 };
 
@@ -58,8 +62,9 @@ export const deleteSchoolController = async (req, res) => {
         const status = await deleteSchool(schoolId);
         res.status(200).json(status);
     } catch (error) {
-        const status = error.status || 500;
-        const message = error.message || "Something went wrong";
-        res.status(status).send(message);
+        return res.status(error.status || 500).json({
+            success: false,
+            message: error.message || "Internal Server Error",
+        });
     }
 };
