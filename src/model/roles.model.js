@@ -11,10 +11,11 @@ export const findRoles = () => {
     });
 };
 
-export const insertRole = (newRole) => {
+export const insertRole = (connection = null, newRole) => {
+    const db = connection || pool;
     const sql = `INSERT INTO roles (role,school_id) VALUES (?,?)`;
     return new Promise((resolve, reject) => {
-        pool.query(sql, newRole, (err, results) => {
+        db.query(sql, newRole, (err, results) => {
             if (err) {
                 return reject(err);
             }

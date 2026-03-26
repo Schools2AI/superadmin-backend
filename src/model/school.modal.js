@@ -24,7 +24,7 @@ export const findSchoolById = (value) => {
     });
 };
 
-export const insertSchool = (values) => {
+export const insertSchool = (connection = null, values) => {
     const sql = `
         INSERT INTO schools (
             school_name,
@@ -44,25 +44,10 @@ export const insertSchool = (values) => {
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,?)
     `;
 
-    // const values = [
-    //     school_name,
-    //     country,
-    //     state,
-    //     city,
-    //     pincode,
-    //     timezone,
-    //     cost,
-    //     student_count,
-    //     teacher_count,
-    //     language_preference,
-    //     board,
-    //     status,
-    //     website_enabled,
-    //     allowed_domains,
-    // ];
+    const db = connection || pool;
 
     return new Promise((resolve, reject) => {
-        pool.query(sql, values, (err, result) => {
+        db.query(sql, values, (err, result) => {
             if (err) {
                 return reject(err);
             }

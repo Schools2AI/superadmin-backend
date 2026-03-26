@@ -33,7 +33,7 @@ export const createNewSchoolController = async (req, res) => {
     try {
         const newSchoolDetails = req.body;
         const credential = await createNewSchool(newSchoolDetails);
-        res.status(200).json(credential);
+        res.status(200).json({ success: true, credential });
     } catch (error) {
         return res.status(error.status || 500).json({
             success: false,

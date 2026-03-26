@@ -11,13 +11,14 @@ export const insertFeature = (value) => {
     });
 };
 
-export const populateSchoolFeatures = (value) => {
+export const populateSchoolFeatures = (connection = null, value) => {
+    const db = connection || pool;
     const sql = `INSERT INTO school_features (school_id, feature_id)
 SELECT ?, id FROM features;
 `;
 
     return new Promise((resolve, reject) => {
-        pool.query(sql, value, (error, result) => {
+        db.query(sql, value, (error, result) => {
             if (error) {
                 return reject(error);
             }

@@ -25,13 +25,14 @@ export const findUserByEmail = (email) => {
     });
 };
 
-export const insertUser = (values) => {
+export const insertUser = (connection = null, values) => {
+    const db = connection || pool;
     const insertUserSql = ` INSERT INTO users 
         (name, role_id, school_id, email,mobile_no, password, description)
         VALUES (?, ?, ?, ?, ?, ?,?)`;
 
     return new Promise((resolve, reject) => {
-        pool.query(insertUserSql, values, (err, results) => {
+        db.query(insertUserSql, values, (err, results) => {
             if (err) {
                 return reject(err);
             }

@@ -10,6 +10,7 @@ import { populateSchoolFeatures } from "../model/features.model.js";
 import { insertUser } from "../model/user.model.js";
 import bcrypt from "bcrypt";
 import { schoolValidation } from "../validation/schoolValidation.js";
+import pool from "../database/db.js";
 
 export const getAllSchoolDetails = async () => {
     const schoolDetails = await findAllSchool();
@@ -22,58 +23,93 @@ export const getSchoolDetails = async ({ id }) => {
 };
 
 const saltRounds = 10;
-export const createNewSchool = async (newSchoolDetails) => {
-    // // Validate all fields present
-    // for (const key in newSchoolDetails) {
-    //     if (!newSchoolDetails[key]) {
-    //         throw { status: 400, message: `Field "${key}" is required` };
-    //     }
-    // }
 
+//import { createConnection } from "../database/db.js"; // export your pool config
+
+export const createNewSchool = async (newSchoolDetails) => {
     try {
         schoolValidation(newSchoolDetails);
     } catch (error) {
         throw { status: 400, message: error.message };
     }
 
-    // console.log(newSchoolDetails);
     const schoolDetailsArray = [
-        newSchoolDetails.schoolName, // school_name
-        newSchoolDetails.country, // country
-        newSchoolDetails.state, // state
-        newSchoolDetails.city, // city
-        newSchoolDetails.pincode, // pincode
-        newSchoolDetails.cost, // cost
-        newSchoolDetails.studentCount, // student_count
-        newSchoolDetails.teacherCount, // teacher_count
-        newSchoolDetails.language, // language_preference
-        newSchoolDetails.board, // board
-        newSchoolDetails.status, // status
-        newSchoolDetails.website, // website_enabled
-        newSchoolDetails.domains, // allowed_domains
-        newSchoolDetails.timeZone, //timeZone
+        newSchoolDetails.schoolName,
+        newSchoolDetails.country,
+        newSchoolDetails.state,
+        newSchoolDetails.city,
+        newSchoolDetails.pincode,
+        newSchoolDetails.cost,
+        newSchoolDetails.studentCount,
+        newSchoolDetails.teacherCount,
+        newSchoolDetails.language,
+        newSchoolDetails.board,
+        newSchoolDetails.status,
+        newSchoolDetails.website,
+        newSchoolDetails.domains,
+        newSchoolDetails.timeZone,
     ];
 
-    const { schoolId } = await insertSchool(schoolDetailsArray);
-    const { roleId } = await insertRole(["SCHOOL_ADMIN", schoolId]);
+    // ✅ Get a callback-based connection using promise wrapper
+    const connection = await new Promise((resolve, reject) => {
+        pool.getConnection((err, conn) => {
+            if (err) return reject(err);
+            resolve(conn); // ✅ This is a callback-based connection
+        });
+    });
 
-    await populateSchoolFeatures([schoolId]);
-    const password = "ADMIN12345";
-    const hash = await bcrypt.hash(password, saltRounds);
-    const newUserArray = [
-        "ADMIN",
-        roleId,
-        schoolId,
-        newSchoolDetails.email,
-        newSchoolDetails.mobileNo,
-        hash,
-        newSchoolDetails.description,
-    ];
-    const result = await insertUser(newUserArray);
+    try {
+        // ✅ Wrap beginTransaction in a promise
+        await new Promise((resolve, reject) => {
+            connection.beginTransaction((err) => {
+                if (err) return reject(err);
+                resolve();
+            });
+        });
 
-    // console.log(result);
+        const { schoolId } = await insertSchool(connection, schoolDetailsArray);
 
-    return { email: newSchoolDetails.email, password };
+        const { roleId } = await insertRole(connection, [
+            "SCHOOL_ADMIN",
+            schoolId,
+        ]);
+
+        await populateSchoolFeatures(connection, [schoolId]);
+
+        const password = "ADMIN12345";
+        const hash = await bcrypt.hash(password, saltRounds);
+
+        const newUserArray = [
+            "ADMIN",
+            roleId,
+            schoolId,
+            newSchoolDetails.email,
+            newSchoolDetails.mobileNo,
+            hash,
+            newSchoolDetails.description,
+        ];
+
+        await insertUser(connection, newUserArray);
+
+        // ✅ Wrap commit in a promise
+        await new Promise((resolve, reject) => {
+            connection.commit((err) => {
+                if (err) return reject(err);
+                resolve();
+            });
+        });
+
+        connection.release(); // ✅ Release back to pool
+        return { email: newSchoolDetails.email, password };
+    } catch (err) {
+        // ✅ Rollback on any error
+        await new Promise((resolve) => {
+            connection.rollback(() => resolve());
+        });
+        connection.release(); // ✅ Always release
+        console.log(err);
+        throw err;
+    }
 };
 
 export const updateSchoolField = async (schoolId, field, value) => {
