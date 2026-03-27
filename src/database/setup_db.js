@@ -42,7 +42,7 @@ const setupDatabase = async () => {
             password VARCHAR(255) NOT NULL,
             phone_number VARCHAR(20),
             email VARCHAR(255) UNIQUE,
-            role ENUM('admin','teacher','student','parent') NOT NULL,
+            role  BIGINT NOT NULL,
             status ENUM('active','inactive','suspended') DEFAULT 'active',
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
