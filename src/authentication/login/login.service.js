@@ -13,8 +13,10 @@ import {
     otpValidation,
 } from "../../validation/loginValidation.js";
 export const loginUser = async (userCredential) => {
+    console.log("loginUser");
     try {
         loginValidation(userCredential);
+        console.log("loginValidation");
     } catch (error) {
         throw { status: 400, message: error.message };
     }
@@ -31,9 +33,13 @@ export const loginUser = async (userCredential) => {
         throw { status: 400, message: "Incorrect password" };
     }
 
-    const permissions = await fetchPermissionsById([user.role_id]);
+    let permissions;
+    try {
+        permissions = await fetchPermissionsById([user.role_id]);
+    } catch (error) {
+        throw { status: 500, message: "Internal error" };
+    }
     const userPermissions = permissions.map(({ name }) => name);
-    console.log(userPermissions);
 
     const token = jwt.sign(
         { userPermissions },

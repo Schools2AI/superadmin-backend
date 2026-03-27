@@ -1,5 +1,5 @@
 import dotEnv from "dotenv";
-import mysql from "mysql2";
+import mysql from "mysql2/promise";
 
 dotEnv.config({ path: process.cwd() + "/config.env" });
 
@@ -10,14 +10,15 @@ const pool = mysql.createPool({
     database: process.env.DB_NAME,
 });
 
-pool.getConnection((err, connection) => {
-    if (err) {
+// Test connection
+(async () => {
+    try {
+        const connection = await pool.getConnection();
+        console.log("Database connected successfully");
+        connection.release();
+    } catch (err) {
         console.error("Database connection failed:", err.message);
-        return;
     }
-
-    console.log("Database connected successfully");
-    connection.release();
-});
+})();
 
 export default pool;

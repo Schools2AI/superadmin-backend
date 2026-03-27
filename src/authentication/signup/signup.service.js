@@ -4,6 +4,7 @@ import { findUserByEmail, insertUser } from "../../model/user.model.js";
 import { singupValidation } from "../../validation/signup.validation..js";
 const saltRounds = 10;
 export const singupUser = async (newUser) => {
+    console.log("singupUser");
     try {
         singupValidation(newUser);
     } catch (error) {
@@ -36,16 +37,15 @@ export const singupUser = async (newUser) => {
     const hash = await bcrypt.hash(newUser.password, saltRounds);
 
     const values = [
-        newUser.name,
-        newUser.role_id,
+        newUser.name, // full_name
+        newUser.role_id, // role_id
         newUser.school_id || null,
         newUser.email,
-        newUser.mobile_no,
-        hash,
-        newUser.description || null,
+        newUser.mobile_no, // phone_number
+        hash, // password
+        newUser.status || "active",
     ];
-
-    const result = await insertUser(values);
+    const result = await insertUser(null, values);
 
     const token = jwt.sign({ mobile: newUser.mobile }, process.env.JWT_SECRET, {
         expiresIn: "1h",

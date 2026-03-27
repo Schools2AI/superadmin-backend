@@ -1,11 +1,9 @@
 import pool from "./db.js";
 
 const setupDatabase = async () => {
-    const promisePool = pool.promise();
-
     try {
         // 1. Create Schools Table
-        await promisePool.query(`
+        await pool.query(`
             CREATE TABLE IF NOT EXISTS schools (
                 school_id INT AUTO_INCREMENT PRIMARY KEY,
                 school_name VARCHAR(255) NOT NULL,
@@ -27,7 +25,7 @@ const setupDatabase = async () => {
         `);
 
         // 2. Create Roles Table
-        await promisePool.query(`
+        await pool.query(`
             CREATE TABLE IF NOT EXISTS roles (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 role VARCHAR(100) NOT NULL,
@@ -36,24 +34,24 @@ const setupDatabase = async () => {
         `);
 
         // 3. Create Users Table
-        await promisePool.query(`
-            CREATE TABLE IF NOT EXISTS users (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                name VARCHAR(255) NOT NULL,
-                role_id INT NOT NULL,
-                school_id INT,
-                email VARCHAR(255) NOT NULL UNIQUE,
-                mobile_no VARCHAR(15),
-                password VARCHAR(255) NOT NULL,
-                description VARCHAR(255),
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE
-            )
+        await pool.query(`
+         CREATE TABLE IF NOT EXISTS users (
+            user_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+            school_id BIGINT,
+            username VARCHAR(255) NOT NULL,
+            password VARCHAR(255) NOT NULL,
+            phone_number VARCHAR(20),
+            email VARCHAR(255) UNIQUE,
+            role ENUM('admin','teacher','student','parent') NOT NULL,
+            status ENUM('active','inactive','suspended') DEFAULT 'active',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            FOREIGN KEY (school_id) REFERENCES schools(id) ON DELETE SET NULL
+        )
         `);
 
         // 4. Create Features Table
-        await promisePool.query(`
+        await pool.query(`
             CREATE TABLE IF NOT EXISTS features (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 feature_name VARCHAR(255) NOT NULL,
@@ -64,7 +62,7 @@ const setupDatabase = async () => {
         `);
 
         // 5. Create OTPs Table
-        await promisePool.query(`
+        await pool.query(`
             CREATE TABLE IF NOT EXISTS otps (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 user_identifier VARCHAR(255) NOT NULL,
@@ -75,7 +73,7 @@ const setupDatabase = async () => {
         `);
 
         // 6. Create School Features Table
-        await promisePool.query(`
+        await pool.query(`
             CREATE TABLE IF NOT EXISTS school_features (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 school_id INT NOT NULL,
@@ -88,7 +86,7 @@ const setupDatabase = async () => {
         `);
 
         // 7. Create Permissions Table
-        await promisePool.query(`
+        await pool.query(`
             CREATE TABLE IF NOT EXISTS permissions (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 name VARCHAR(100) NOT NULL UNIQUE,
@@ -97,7 +95,7 @@ const setupDatabase = async () => {
         `);
 
         // 8. Create Role Permissions Table
-        await promisePool.query(`
+        await pool.query(`
             CREATE TABLE IF NOT EXISTS role_permissions (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 role_id INT NOT NULL,
@@ -108,18 +106,22 @@ const setupDatabase = async () => {
         `);
 
         // SEEDING INITIAL DATA
-        
+
         // Seed Roles if empty
-        const [roles] = await promisePool.query("SELECT COUNT(*) as count FROM roles");
+        const [roles] = await pool.query("SELECT COUNT(*) as count FROM roles");
         if (roles[0].count === 0) {
-            await promisePool.query("INSERT INTO roles (role, school_id) VALUES ('SUPER_ADMIN', NULL)");
+            await pool.query(
+                "INSERT INTO roles (role, school_id) VALUES ('SUPER_ADMIN', NULL)",
+            );
             console.log("Seeded roles table.");
         }
 
         // Seed Features if empty
-        const [features] = await promisePool.query("SELECT COUNT(*) as count FROM features");
+        const [features] = await pool.query(
+            "SELECT COUNT(*) as count FROM features",
+        );
         if (features[0].count === 0) {
-            await promisePool.query(`
+            await pool.query(`
                 INSERT INTO features (feature_name, description) VALUES
                 ('AI Chatbot', 'Interactive AI chatbot for student queries and assistance'),
                 ('AI Notes Generation', 'Automatically generate study notes using AI'),
@@ -138,9 +140,11 @@ const setupDatabase = async () => {
         }
 
         // Seed Permissions if empty
-        const [perms] = await promisePool.query("SELECT COUNT(*) as count FROM permissions");
+        const [perms] = await pool.query(
+            "SELECT COUNT(*) as count FROM permissions",
+        );
         if (perms[0].count === 0) {
-            await promisePool.query(`
+            await pool.query(`
                 INSERT INTO permissions (name, description) VALUES
                 ('SCHOOL:CREATE', 'Create schools'),
                 ('SCHOOL:EDIT', 'Edit schools'),
@@ -151,14 +155,22 @@ const setupDatabase = async () => {
         }
 
         // Seed Role Permissions if empty (linking SUPER_ADMIN to all initial permissions)
-        const [rolePerms] = await promisePool.query("SELECT COUNT(*) as count FROM role_permissions");
+        const [rolePerms] = await pool.query(
+            "SELECT COUNT(*) as count FROM role_permissions",
+        );
         if (rolePerms[0].count === 0) {
-            const [adminRole] = await promisePool.query("SELECT id FROM roles WHERE role = 'SUPER_ADMIN' LIMIT 1");
-            const [allPerms] = await promisePool.query("SELECT id FROM permissions");
-            
+            const [adminRole] = await pool.query(
+                "SELECT id FROM roles WHERE role = 'SUPER_ADMIN' LIMIT 1",
+            );
+            const [allPerms] = await pool.query("SELECT id FROM permissions");
+
             if (adminRole.length > 0 && allPerms.length > 0) {
-                const values = allPerms.map(p => `(${adminRole[0].id}, ${p.id})`).join(",");
-                await promisePool.query(`INSERT INTO role_permissions (role_id, permission_id) VALUES ${values}`);
+                const values = allPerms
+                    .map((p) => `(${adminRole[0].id}, ${p.id})`)
+                    .join(",");
+                await pool.query(
+                    `INSERT INTO role_permissions (role_id, permission_id) VALUES ${values}`,
+                );
                 console.log("Seeded role_permissions table.");
             }
         }

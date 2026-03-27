@@ -24,8 +24,6 @@ export const getSchoolDetails = async ({ id }) => {
 
 const saltRounds = 10;
 
-//import { createConnection } from "../database/db.js"; // export your pool config
-
 export const createNewSchool = async (newSchoolDetails) => {
     try {
         schoolValidation(newSchoolDetails);
@@ -50,22 +48,10 @@ export const createNewSchool = async (newSchoolDetails) => {
         newSchoolDetails.timeZone,
     ];
 
-    // ✅ Get a callback-based connection using promise wrapper
-    const connection = await new Promise((resolve, reject) => {
-        pool.getConnection((err, conn) => {
-            if (err) return reject(err);
-            resolve(conn); // ✅ This is a callback-based connection
-        });
-    });
+    const connection = await pool.getConnection();
 
     try {
-        // ✅ Wrap beginTransaction in a promise
-        await new Promise((resolve, reject) => {
-            connection.beginTransaction((err) => {
-                if (err) return reject(err);
-                resolve();
-            });
-        });
+        await connection.beginTransaction();
 
         const { schoolId } = await insertSchool(connection, schoolDetailsArray);
 
@@ -91,24 +77,14 @@ export const createNewSchool = async (newSchoolDetails) => {
 
         await insertUser(connection, newUserArray);
 
-        // ✅ Wrap commit in a promise
-        await new Promise((resolve, reject) => {
-            connection.commit((err) => {
-                if (err) return reject(err);
-                resolve();
-            });
-        });
-
-        connection.release(); // ✅ Release back to pool
+        await connection.commit();
         return { email: newSchoolDetails.email, password };
     } catch (err) {
-        // ✅ Rollback on any error
-        await new Promise((resolve) => {
-            connection.rollback(() => resolve());
-        });
-        connection.release(); // ✅ Always release
-        console.log(err);
+        await connection.rollback();
+        console.error(err);
         throw err;
+    } finally {
+        connection.release();
     }
 };
 
@@ -153,4 +129,5 @@ export const deleteSchool = async (schoolId) => {
         throw { status: 400, message: "School Id  required" };
     }
     const result = await deleteSchoolByID(schoolId);
+    return result;
 };

@@ -1,42 +1,26 @@
 import pool from "../database/db.js";
 
-export const findUserByMobile = (mobile) => {
+export const findUserByMobile = async (mobile) => {
     const findUserSql = "SELECT * FROM users WHERE mobile_no = ?";
-    return new Promise((resolve, reject) => {
-        pool.query(findUserSql, [mobile], (err, results) => {
-            if (err) {
-                return reject(err);
-            }
-
-            resolve(results[0]);
-        });
-    });
+    const [results] = await pool.query(findUserSql, [mobile]);
+    return results[0];
 };
 
-export const findUserByEmail = (email) => {
+export const findUserByEmail = async (email) => {
     const findUserSql = "SELECT * FROM users WHERE email = ?";
-    return new Promise((resolve, reject) => {
-        pool.query(findUserSql, [email], (err, results) => {
-            if (err) {
-                return reject(err);
-            }
-            resolve(results[0]);
-        });
-    });
+    const [results] = await pool.query(findUserSql, [email]);
+    return results[0];
 };
 
-export const insertUser = (connection = null, values) => {
+export const insertUser = async (connection = null, values) => {
     const db = connection || pool;
-    const insertUserSql = ` INSERT INTO users 
-        (name, role_id, school_id, email,mobile_no, password, description)
-        VALUES (?, ?, ?, ?, ?, ?,?)`;
 
-    return new Promise((resolve, reject) => {
-        db.query(insertUserSql, values, (err, results) => {
-            if (err) {
-                return reject(err);
-            }
-            resolve(results);
-        });
-    });
+    const insertUserSql = `
+        INSERT INTO users
+        (full_name, role_id, school_id, email, phone_number, password, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    const [results] = await db.execute(insertUserSql, values);
+    return results;
 };

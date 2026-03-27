@@ -1,19 +1,15 @@
 import { loginUser, sendOtp, verifyOtp } from "./login.service.js";
 
 export const loginUserController = async (req, res) => {
+    console.log("loginUserController");
     try {
         const userCredential = req.body;
 
         const { token } = await loginUser(userCredential);
 
-        // res.cookie("token", token, {
-        //     httpOnly: true,
-        //     maxAge: 60 * 60 * 1000,
-        //     path: "/",
-        // });
-
         res.status(200).json({ isSuccess: true, token });
     } catch (error) {
+        console.log(error);
         const status = error.status || 500;
         const message = error.message || "Something went wrong";
         res.status(status).json({ isSuccess: false, message });

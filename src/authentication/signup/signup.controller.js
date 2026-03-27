@@ -11,6 +11,7 @@ export const signupUserController = async (req, res) => {
 
         return res.status(200).json({ isSuccess: true, token });
     } catch (error) {
+        console.log(error);
         const status = error.status || 500;
         const message = error.message || "Something went wrong";
         res.status(status).send(message);

@@ -1,30 +1,18 @@
 import pool from "../database/db.js";
 
-export const findAllSchool = () => {
+export const findAllSchool = async () => {
     const sql = "SELECT * FROM schools";
-    return new Promise((resolve, reject) => {
-        pool.query(sql, (err, result) => {
-            if (err) {
-                return reject(err);
-            }
-            resolve(result);
-        });
-    });
+    const [result] = await pool.query(sql);
+    return result;
 };
 
-export const findSchoolById = (value) => {
+export const findSchoolById = async (value) => {
     const sql = "SELECT * FROM schools WHERE school_id = ?";
-    return new Promise((resolve, reject) => {
-        pool.query(sql, value, (err, result) => {
-            if (err) {
-                return reject(err);
-            }
-            resolve(result);
-        });
-    });
+    const [result] = await pool.query(sql, value);
+    return result;
 };
 
-export const insertSchool = (connection = null, values) => {
+export const insertSchool = async (connection = null, values) => {
     const sql = `
         INSERT INTO schools (
             school_name,
@@ -45,21 +33,14 @@ export const insertSchool = (connection = null, values) => {
     `;
 
     const db = connection || pool;
+    const [result] = await db.execute(sql, values);
 
-    return new Promise((resolve, reject) => {
-        db.query(sql, values, (err, result) => {
-            if (err) {
-                return reject(err);
-            }
-
-            resolve({
-                schoolId: result.insertId,
-            });
-        });
-    });
+    return {
+        schoolId: result.insertId,
+    };
 };
 
-export const updateSchoolFieldByID = (schoolId, field, value) => {
+export const updateSchoolFieldByID = async (schoolId, field, value) => {
     const sql = `
     UPDATE schools
     SET
@@ -67,34 +48,24 @@ export const updateSchoolFieldByID = (schoolId, field, value) => {
     WHERE school_id = ?;
   `;
 
-    return new Promise((resolve, reject) => {
-        pool.query(sql, [value, schoolId], (err, result) => {
-            if (err) {
-                return reject(err);
-            }
+    const [result] = await pool.execute(sql, [value, schoolId]);
 
-            resolve({
-                schoolId: result.insertId,
-                affectedRows: result.affectedRows,
-            });
-        });
-    });
+    return {
+        schoolId,
+        affectedRows: result.affectedRows,
+    };
 };
 
-export const deleteSchoolByID = (schoolId) => {
+export const deleteSchoolByID = async (schoolId) => {
     const sql = `
     DELETE FROM schools
     WHERE school_id = ?;
   `;
 
-    return new Promise((resolve, reject) => {
-        pool.query(sql, [schoolId], (err, result) => {
-            if (err) return reject(err);
+    const [result] = await pool.execute(sql, [schoolId]);
 
-            resolve({
-                schoolId,
-                affectedRows: result.affectedRows,
-            });
-        });
-    });
+    return {
+        schoolId,
+        affectedRows: result.affectedRows,
+    };
 };
