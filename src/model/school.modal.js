@@ -34,7 +34,7 @@ export const insertSchool = async (connection = null, values) => {
 
     const db = connection || pool;
     const [result] = await db.execute(sql, values);
-    console.log("insertSchool");
+    // console.log("insertSchool");
 
     return {
         schoolId: result.insertId,

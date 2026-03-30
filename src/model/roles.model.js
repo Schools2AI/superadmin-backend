@@ -15,7 +15,7 @@ export const getRoleId = async (connection = null, role) => {
     if (rows.length === 0) {
         return null; // role not found
     }
-    console.log("getRoleId ", rows);
+    // console.log("getRoleId ", rows);
     return rows[0].role_id;
 };
 

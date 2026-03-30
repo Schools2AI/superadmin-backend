@@ -23,6 +23,6 @@ export const insertUser = async (connection = null, values) => {
     `;
 
     const [results] = await db.execute(insertUserSql, values);
-    console.log("insertUser");
+    // console.log("insertUser");
     return results;
 };
