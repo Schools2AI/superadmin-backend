@@ -9,14 +9,14 @@ export const findRoles = async () => {
 export const getRoleId = async (connection = null, role) => {
     const db = connection || pool;
 
-    const sql = `SELECT id FROM roles WHERE role = ? LIMIT 1`;
+    const sql = `SELECT role_id FROM admin_roles WHERE role_name = ? LIMIT 1`;
     const [rows] = await db.execute(sql, role);
 
     if (rows.length === 0) {
         return null; // role not found
     }
     console.log("getRoleId ", rows);
-    return rows[0].id;
+    return rows[0].role_id;
 };
 
 export const insertRole = async (connection = null, role, schoolId) => {

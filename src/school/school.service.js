@@ -69,7 +69,7 @@ export const createNewSchool = async (newSchoolDetails) => {
             newSchoolDetails.email,
             newSchoolDetails.mobileNo,
             hash,
-            newSchoolDetails.description,
+            newSchoolDetails.status,
         ];
 
         await insertUser(connection, newUserArray);

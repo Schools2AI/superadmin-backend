@@ -31,7 +31,7 @@ export const singupUser = async (newUser) => {
         newUser.email,
         newUser.mobile_no, // phone_number
         hash, // password
-        newUser.status || "ACTIVE",
+        newUser.status || "Active",
     ];
     const result = await insertUser(null, values);
 
