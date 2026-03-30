@@ -57,6 +57,26 @@ const setupDatabase = async () => {
 );
         `);
 
+        // 3. Create Users Table
+        await pool.query(`
+         CREATE TABLE  IF NOT EXISTS super_users (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    full_name VARCHAR(150),
+    password VARCHAR(255) NOT NULL,
+    contact_no VARCHAR(20) NOT NULL UNIQUE,
+    email VARCHAR(150) NOT NULL UNIQUE,
+    role_id INT NOT NULL,
+    status ENUM('Active','Inactive','Suspended') DEFAULT 'Active',
+    avatar VARCHAR(255),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+
+    CONSTRAINT fk_users_role 
+        FOREIGN KEY (role_id) REFERENCES roles(id)
+);
+        `);
+
         // 4. Create Features Table
         await pool.query(`
             CREATE TABLE IF NOT EXISTS features (

@@ -27,13 +27,12 @@ export const singupUser = async (newUser) => {
     const values = [
         newUser.name, // full_name
         newUser.role_id, // role_id
-        newUser.school_id || null,
         newUser.email,
         newUser.mobile_no, // phone_number
         hash, // password
         newUser.status || "Active",
     ];
-    const result = await insertUser(null, values);
+    const result = await insertUser(values);
 
     const token = jwt.sign({ mobile: newUser.mobile }, process.env.JWT_SECRET, {
         expiresIn: "1h",

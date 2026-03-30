@@ -6,7 +6,7 @@ export const findRoles = async () => {
     return results;
 };
 
-export const getRoleId = async (connection = null, role) => {
+export const getRoleIdFromAdminRole = async (connection = null, role) => {
     const db = connection || pool;
 
     const sql = `SELECT role_id FROM admin_roles WHERE role_name = ? LIMIT 1`;

@@ -5,9 +5,9 @@ import {
     deleteSchoolByID,
     findSchoolById,
 } from "../model/school.modal.js";
-import { getRoleId } from "../model/roles.model.js";
+import { getRoleIdFromAdminRole } from "../model/roles.model.js";
 import { populateSchoolFeatures } from "../model/features.model.js";
-import { insertUser } from "../model/user.model.js";
+import { insertSchoolAdmin } from "../model/user.model.js";
 import bcrypt from "bcrypt";
 import { schoolValidation } from "../validation/schoolValidation.js";
 import pool from "../database/db.js";
@@ -55,7 +55,7 @@ export const createNewSchool = async (newSchoolDetails) => {
 
         const { schoolId } = await insertSchool(connection, schoolDetailsArray);
 
-        const roleId = await getRoleId(connection, ["ADMIN"]);
+        const roleId = await getRoleIdFromAdminRole(connection, ["ADMIN"]);
 
         await populateSchoolFeatures(connection, [schoolId]);
 
@@ -72,7 +72,7 @@ export const createNewSchool = async (newSchoolDetails) => {
             newSchoolDetails.status,
         ];
 
-        await insertUser(connection, newUserArray);
+        await insertSchoolAdmin(connection, newUserArray);
 
         await connection.commit();
         return { email: newSchoolDetails.email, password };
