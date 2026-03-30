@@ -12,30 +12,32 @@ import {
     mobileValidation,
     otpValidation,
 } from "../../validation/loginValidation.js";
+import { AppError } from "../../middleware/errorHandler.js";
+
 export const loginUser = async (userCredential) => {
     try {
         loginValidation(userCredential);
     } catch (error) {
-        throw { status: 400, message: error.message };
+        throw new AppError(error.message, 400);
     }
 
     const { email, password } = userCredential;
 
     const user = await findUserByEmail(email);
     if (!user) {
-        throw { status: 404, message: "User not found" };
+        throw new AppError("User not found", 404);
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-        throw { status: 400, message: "Incorrect password" };
+        throw new AppError("Incorrect password", 400);
     }
 
     let permissions;
     try {
         permissions = await fetchPermissionsById([user.role_id]);
     } catch (error) {
-        throw { status: 500, message: "Internal error" };
+        throw new AppError("Internal error", 500);
     }
     const userPermissions = permissions.map(({ name }) => name);
 
@@ -52,11 +54,11 @@ export const sendOtp = async ({ mobile_no }) => {
     try {
         mobileValidation({ mobileNo: mobile_no });
     } catch (error) {
-        throw { status: 400, message: error.message };
+        throw new AppError(error.message, 400);
     }
     const result = await findUserByMobile(mobile_no);
     if (!result) {
-        throw { status: 404, message: "User not found" };
+        throw new AppError("User not found", 404);
     }
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
@@ -71,7 +73,7 @@ export const sendOtp = async ({ mobile_no }) => {
         const result = await insertOtp(value);
         console.log(result);
     } catch (error) {
-        throw { status: 500, message: "Database error" };
+        throw new AppError("Database error", 500);
     }
 
     console.log(expiresAt);
@@ -82,7 +84,7 @@ export const verifyOtp = async ({ mobile_no, otp }) => {
         mobileValidation({ mobileNo: mobile_no });
         otpValidation({ otp });
     } catch (error) {
-        throw { status: 400, message: error.message };
+        throw new AppError(error.message, 400);
     }
     try {
         const otpExist = await findOtp([mobile_no]);
@@ -100,6 +102,6 @@ export const verifyOtp = async ({ mobile_no, otp }) => {
 
         return false;
     } catch (error) {
-        throw { status: 500, message: "Database error" };
+        throw new AppError("Database error", 500);
     }
 };

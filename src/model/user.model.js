@@ -13,6 +13,7 @@ export const findUserByEmail = async (email) => {
 };
 
 export const insertUser = async (connection = null, values) => {
+    console.log("value -> ", values);
     const db = connection || pool;
 
     const insertUserSql = `
@@ -22,5 +23,6 @@ export const insertUser = async (connection = null, values) => {
     `;
 
     const [results] = await db.execute(insertUserSql, values);
+    console.log("insertUser");
     return results;
 };

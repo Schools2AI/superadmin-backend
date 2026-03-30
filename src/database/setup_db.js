@@ -20,7 +20,8 @@ const setupDatabase = async () => {
                 onboard_date DATETIME DEFAULT CURRENT_TIMESTAMP,
                 status ENUM('Active','Suspended','Trial','Archived') DEFAULT 'Trial',
                 website_enabled BOOLEAN DEFAULT FALSE,
-                allowed_domains TEXT
+                allowed_domains TEXT,
+                class_count INT DEFAULT 0
             )
         `);
 
@@ -28,26 +29,32 @@ const setupDatabase = async () => {
         await pool.query(`
             CREATE TABLE IF NOT EXISTS roles (
                 id INT AUTO_INCREMENT PRIMARY KEY,
-                role VARCHAR(100) NOT NULL,
-                school_id INT NULL
+                role VARCHAR(100) NOT NULL
             )
         `);
 
         // 3. Create Users Table
         await pool.query(`
-         CREATE TABLE IF NOT EXISTS users (
-            user_id BIGINT AUTO_INCREMENT PRIMARY KEY,
-            school_id BIGINT,
-            username VARCHAR(255) NOT NULL,
-            password VARCHAR(255) NOT NULL,
-            phone_number VARCHAR(20),
-            email VARCHAR(255) UNIQUE,
-            role  BIGINT NOT NULL,
-            status ENUM('active','inactive','suspended') DEFAULT 'active',
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            FOREIGN KEY (school_id) REFERENCES schools(id) ON DELETE SET NULL
-        )
+         CREATE TABLE  IF NOT EXISTS users (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    school_id BIGINT,
+    username VARCHAR(100) ,
+    full_name VARCHAR(150),
+    password VARCHAR(255) NOT NULL,
+    phone_number VARCHAR(20),
+    email VARCHAR(150) NOT NULL,
+    role_id BIGINT,
+    status ENUM('ACTIVE','INACTIVE','SUSPENDED') DEFAULT 'ACTIVE',
+    avatar VARCHAR(255),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_users_school 
+        FOREIGN KEY (school_id) REFERENCES schools(id),
+
+    CONSTRAINT fk_users_role 
+        FOREIGN KEY (role_id) REFERENCES roles(id)
+);
         `);
 
         // 4. Create Features Table

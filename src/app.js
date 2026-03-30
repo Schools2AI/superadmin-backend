@@ -6,6 +6,7 @@ import rolesRouter from "./role/roles.router.js";
 import featuresRouter from "./features/features.router.js";
 import cors from "cors";
 import { authMiddleware } from "./middleware/auth.middleware.js";
+import { errorHandler } from "./middleware/errorHandler.js";
 
 import setupDatabase from "./database/setup_db.js";
 
@@ -32,15 +33,7 @@ app.use("/roles", authMiddleware, rolesRouter);
 app.use("/features", authMiddleware, featuresRouter);
 
 // Global error handler
-app.use((err, req, res, next) => {
-    console.error(err);
-
-    if (err.isOperational) {
-        return res.status(err.status).json({ error: err.message });
-    }
-
-    res.status(500).json({ error: "Something went wrong" });
-});
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

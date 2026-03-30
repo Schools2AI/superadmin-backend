@@ -12,6 +12,7 @@ export const populateSchoolFeatures = async (connection = null, value) => {
 SELECT ?, id FROM features;
 `;
     const [result] = await db.execute(sql, value);
+    console.log("populateSchoolFeatures");
     return result;
 };
 

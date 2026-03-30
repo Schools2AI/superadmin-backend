@@ -2,36 +2,24 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { findUserByEmail, insertUser } from "../../model/user.model.js";
 import { singupValidation } from "../../validation/signup.validation..js";
+import { AppError } from "../../middleware/errorHandler.js";
+
 const saltRounds = 10;
 export const singupUser = async (newUser) => {
     console.log("singupUser");
     try {
         singupValidation(newUser);
     } catch (error) {
-        console.log("Z", error.message);
-
-        throw {
-            status: 400,
-            message: error.message,
-        };
+        throw new AppError(error.message, 400);
     }
-    // for (let key in newUser) {
-    //     if (!newUser[key]) {
-    //         throw {
-    //             status: 400,
-    //             message: `Field "${key}" is required`,
-    //         };
-    //     }
-    // }
 
     const mobileExists = await findUserByEmail(newUser.email);
 
     if (mobileExists) {
-        throw {
-            status: 400,
-            message:
-                "Email number already exists. Kindly retry with different email",
-        };
+        throw new AppError(
+            "Email already exists. Kindly retry with different email",
+            400,
+        );
     }
 
     const hash = await bcrypt.hash(newUser.password, saltRounds);
@@ -43,7 +31,7 @@ export const singupUser = async (newUser) => {
         newUser.email,
         newUser.mobile_no, // phone_number
         hash, // password
-        newUser.status || "active",
+        newUser.status || "ACTIVE",
     ];
     const result = await insertUser(null, values);
 

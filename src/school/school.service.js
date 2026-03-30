@@ -5,7 +5,7 @@ import {
     deleteSchoolByID,
     findSchoolById,
 } from "../model/school.modal.js";
-import { insertRole } from "../model/roles.model.js";
+import { getRoleId } from "../model/roles.model.js";
 import { populateSchoolFeatures } from "../model/features.model.js";
 import { insertUser } from "../model/user.model.js";
 import bcrypt from "bcrypt";
@@ -55,10 +55,7 @@ export const createNewSchool = async (newSchoolDetails) => {
 
         const { schoolId } = await insertSchool(connection, schoolDetailsArray);
 
-        const { roleId } = await insertRole(connection, [
-            "SCHOOL_ADMIN",
-            schoolId,
-        ]);
+        const roleId = await getRoleId(connection, ["ADMIN"]);
 
         await populateSchoolFeatures(connection, [schoolId]);
 
