@@ -13,10 +13,8 @@ import {
     otpValidation,
 } from "../../validation/loginValidation.js";
 export const loginUser = async (userCredential) => {
-    console.log("loginUser");
     try {
         loginValidation(userCredential);
-        console.log("loginValidation");
     } catch (error) {
         throw { status: 400, message: error.message };
     }
@@ -104,6 +102,4 @@ export const verifyOtp = async ({ mobile_no, otp }) => {
     } catch (error) {
         throw { status: 500, message: "Database error" };
     }
-
-    console.log(expiresAt);
 };

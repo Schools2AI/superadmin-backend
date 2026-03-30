@@ -6,7 +6,7 @@ import rolesRouter from "./role/roles.router.js";
 import featuresRouter from "./features/features.router.js";
 import cors from "cors";
 import { authMiddleware } from "./middleware/auth.middleware.js";
-import cookieParser from "cookie-parser";
+
 import setupDatabase from "./database/setup_db.js";
 
 const app = express();
@@ -17,7 +17,7 @@ setupDatabase().catch((err) => {
 });
 
 app.use(express.json({ limit: "10kb" }));
-// app.use(cookieParser());
+
 // app.use(helmet());
 app.use(
     cors({
@@ -30,6 +30,17 @@ app.use("/auth", authRouter);
 app.use("/school", authMiddleware, schoolRouter);
 app.use("/roles", authMiddleware, rolesRouter);
 app.use("/features", authMiddleware, featuresRouter);
+
+// Global error handler
+app.use((err, req, res, next) => {
+    console.error(err);
+
+    if (err.isOperational) {
+        return res.status(err.status).json({ error: err.message });
+    }
+
+    res.status(500).json({ error: "Something went wrong" });
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
