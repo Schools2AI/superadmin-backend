@@ -7,7 +7,7 @@ export const findAllSchool = async () => {
 };
 
 export const findSchoolById = async (value) => {
-    const sql = "SELECT * FROM schools WHERE school_id = ?";
+    const sql = "SELECT * FROM schools WHERE id = ?";
     const [result] = await pool.query(sql, value);
     return result;
 };
@@ -46,7 +46,7 @@ export const updateSchoolFieldByID = async (schoolId, field, value) => {
     UPDATE schools
     SET
      ${field} = ?
-    WHERE school_id = ?;
+    WHERE id = ?;
   `;
 
     const [result] = await pool.execute(sql, [value, schoolId]);
@@ -60,7 +60,7 @@ export const updateSchoolFieldByID = async (schoolId, field, value) => {
 export const deleteSchoolByID = async (schoolId) => {
     const sql = `
     DELETE FROM schools
-    WHERE school_id = ?;
+    WHERE id = ?;
   `;
 
     const [result] = await pool.execute(sql, [schoolId]);

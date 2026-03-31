@@ -13,7 +13,7 @@ export const findUserByEmail = async (email) => {
 };
 
 export const insertSchoolAdmin = async (connection = null, values) => {
-    console.log("value -> ", values);
+    // console.log("value -> ", values);
     const db = connection || pool;
 
     const insertUserSql = `

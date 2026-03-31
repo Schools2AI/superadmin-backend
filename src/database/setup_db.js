@@ -35,30 +35,6 @@ const setupDatabase = async () => {
 
         // 3. Create Users Table
         await pool.query(`
-         CREATE TABLE  IF NOT EXISTS users (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    school_id BIGINT,
-    username VARCHAR(100) ,
-    full_name VARCHAR(150),
-    password VARCHAR(255) NOT NULL,
-    phone_number VARCHAR(20),
-    email VARCHAR(150) NOT NULL,
-    role_id BIGINT,
-    status ENUM('ACTIVE','INACTIVE','SUSPENDED') DEFAULT 'ACTIVE',
-    avatar VARCHAR(255),
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
-    CONSTRAINT fk_users_school 
-        FOREIGN KEY (school_id) REFERENCES schools(id),
-
-    CONSTRAINT fk_users_role 
-        FOREIGN KEY (role_id) REFERENCES roles(id)
-);
-        `);
-
-        // 3. Create Users Table
-        await pool.query(`
          CREATE TABLE  IF NOT EXISTS super_users (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     full_name VARCHAR(150),
@@ -137,9 +113,7 @@ const setupDatabase = async () => {
         // Seed Roles if empty
         const [roles] = await pool.query("SELECT COUNT(*) as count FROM roles");
         if (roles[0].count === 0) {
-            await pool.query(
-                "INSERT INTO roles (role, school_id) VALUES ('SUPER_ADMIN', NULL)",
-            );
+            await pool.query("INSERT INTO roles (role) VALUES ('SUPER_ADMIN')");
             console.log("Seeded roles table.");
         }
 
