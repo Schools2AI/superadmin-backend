@@ -1,3 +1,4 @@
+import type { RowDataPacket } from "mysql2/promise";
 import pool from "./db.ts";
 
 const setupDatabase = async () => {
@@ -111,14 +112,16 @@ const setupDatabase = async () => {
         // SEEDING INITIAL DATA
 
         // Seed Roles if empty
-        const [roles] = await pool.query("SELECT COUNT(*) as count FROM roles");
+        const [roles] = await pool.query<RowDataPacket[]>(
+            "SELECT COUNT(*) as count FROM roles",
+        );
         if (roles[0].count === 0) {
             await pool.query("INSERT INTO roles (role) VALUES ('SUPER_ADMIN')");
             console.log("Seeded roles table.");
         }
 
         // Seed Features if empty
-        const [features] = await pool.query(
+        const [features] = await pool.query<RowDataPacket[]>(
             "SELECT COUNT(*) as count FROM features",
         );
         if (features[0].count === 0) {
@@ -141,7 +144,7 @@ const setupDatabase = async () => {
         }
 
         // Seed Permissions if empty
-        const [perms] = await pool.query(
+        const [perms] = await pool.query<RowDataPacket[]>(
             "SELECT COUNT(*) as count FROM permissions",
         );
         if (perms[0].count === 0) {
@@ -156,14 +159,16 @@ const setupDatabase = async () => {
         }
 
         // Seed Role Permissions if empty (linking SUPER_ADMIN to all initial permissions)
-        const [rolePerms] = await pool.query(
+        const [rolePerms] = await pool.query<RowDataPacket[]>(
             "SELECT COUNT(*) as count FROM role_permissions",
         );
         if (rolePerms[0].count === 0) {
-            const [adminRole] = await pool.query(
+            const [adminRole] = await pool.query<RowDataPacket[]>(
                 "SELECT id FROM roles WHERE role = 'SUPER_ADMIN' LIMIT 1",
             );
-            const [allPerms] = await pool.query("SELECT id FROM permissions");
+            const [allPerms] = await pool.query<RowDataPacket[]>(
+                "SELECT id FROM permissions",
+            );
 
             if (adminRole.length > 0 && allPerms.length > 0) {
                 const values = allPerms

@@ -1,6 +1,7 @@
 import type { Pool, PoolConnection, ResultSetHeader } from "mysql2/promise";
 import pool from "../database/db.ts";
-import type { NewSchoolDetails } from "../type/type.d.ts";
+
+import type { newSchool } from "../validation/schoolValidation.ts";
 
 export const findAllSchool = async () => {
     const sql = "SELECT * FROM schools";
@@ -15,7 +16,7 @@ export const findSchoolById = async (value: string[]) => {
 };
 
 export const insertSchool = async (
-    newSchoolDetails: NewSchoolDetails,
+    newSchoolDetails: newSchool,
     connection: PoolConnection | null = null,
 ) => {
     const schoolDetailsArray = [

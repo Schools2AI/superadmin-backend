@@ -10,8 +10,8 @@ import { populateSchoolFeatures } from "../model/features.model.ts";
 import { insertSchoolAdmin } from "../model/user.model.ts";
 import bcrypt from "bcrypt";
 import { schoolValidation } from "../validation/schoolValidation.ts";
+import type { newSchool } from "../validation/schoolValidation.ts";
 import pool from "../database/db.ts";
-import type { NewSchoolDetails } from "../type/type.js";
 
 export const getAllSchoolDetails = async () => {
     const schoolDetails = await findAllSchool();
@@ -25,7 +25,7 @@ export const getSchoolDetails = async (id: string) => {
 
 const saltRounds = 10;
 
-export const createNewSchool = async (newSchoolDetails: NewSchoolDetails) => {
+export const createNewSchool = async (newSchoolDetails: newSchool) => {
     // console.log(newSchoolDetails);
     try {
         schoolValidation(newSchoolDetails);

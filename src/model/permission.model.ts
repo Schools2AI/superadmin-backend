@@ -1,7 +1,8 @@
+import type { ResultSetHeader, RowDataPacket } from "mysql2";
 import pool from "../database/db.ts";
 
 export const fetchPermissionsById = async (
-    value: string,
+    value: string[],
     connection = null,
 ) => {
     const db = connection || pool;
@@ -12,6 +13,6 @@ export const fetchPermissionsById = async (
         WHERE rp.role_id = ?
     `;
 
-    const [results] = await db.query(sql, [value]);
-    return results;
+    const [results] = await db.query<RowDataPacket[]>(sql, [value]);
+    return results as { name: string }[];
 };

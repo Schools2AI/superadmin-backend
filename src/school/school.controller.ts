@@ -59,7 +59,7 @@ export const updateSchoolFieldController = async (
 ) => {
     try {
         const { field, value } = req.body;
-        const schoolId = req.params?.id;
+        const schoolId = req.params?.id as string;
         const status = await updateSchoolField(schoolId, field, value);
         res.status(200).json(status);
     } catch (error: any) {
@@ -72,7 +72,7 @@ export const updateSchoolFieldController = async (
 
 export const deleteSchoolController = async (req: Request, res: Response) => {
     try {
-        const schoolId = req.params?.id;
+        const schoolId = req.params?.id as string;
         const status = await deleteSchool(schoolId);
         res.status(200).json(status);
     } catch (error: any) {

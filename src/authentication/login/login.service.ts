@@ -41,9 +41,7 @@ export const loginUser = async (userCredential: LoginInput) => {
 
     let permissions: { name: string }[];
     try {
-        permissions = (await fetchPermissionsById([user.role_id])) as {
-            name: string;
-        }[];
+        permissions = await fetchPermissionsById([user.role_id]);
     } catch (error) {
         throw new AppError("Internal error", 500);
     }

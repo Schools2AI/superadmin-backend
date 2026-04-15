@@ -1,7 +1,7 @@
 import pool from "../database/db.ts";
 import type { ResultSetHeader, RowDataPacket } from "mysql2/promise";
 
-export const insertOtp = async (value: [string, string, string]) => {
+export const insertOtp = async (value: (string | number | Date)[]) => {
     const sql = `
     INSERT INTO otps (user_identifier, otp, expires_at)
     VALUES (?, ?, ?)
