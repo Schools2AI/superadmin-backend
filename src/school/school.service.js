@@ -25,6 +25,7 @@ export const getSchoolDetails = async ({ id }) => {
 const saltRounds = 10;
 
 export const createNewSchool = async (newSchoolDetails) => {
+    // console.log(newSchoolDetails);
     try {
         schoolValidation(newSchoolDetails);
     } catch (error) {
@@ -46,6 +47,7 @@ export const createNewSchool = async (newSchoolDetails) => {
         newSchoolDetails.website,
         newSchoolDetails.domains,
         newSchoolDetails.timeZone,
+        newSchoolDetails.classCount,
     ];
 
     const connection = await pool.getConnection();

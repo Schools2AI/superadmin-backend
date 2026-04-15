@@ -43,6 +43,7 @@ export const schoolValidation = (obj) => {
             website: z.boolean(),
 
             domains: z.string().optional(),
+            classCount: z.number().positive(),
         })
         .strict();
 

@@ -28,8 +28,9 @@ export const insertSchool = async (connection = null, values) => {
             status,
             website_enabled,
             allowed_domains,
-            timezone
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,?)
+            timezone,
+            class_count
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,? ,?)
     `;
 
     const db = connection || pool;
