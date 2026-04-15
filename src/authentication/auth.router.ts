@@ -4,8 +4,8 @@ import {
     sendOtpController,
     verifyOtpController,
     logoutController,
-} from "./login/login.controller.js";
-import { signupUserController } from "./signup/signup.controller.js";
+} from "./login/login.controller.ts";
+import { signupUserController } from "./signup/signup.controller.ts";
 
 const router = express.Router();
 

@@ -1,23 +1,29 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { findUserByEmail, findUserByMobile } from "../../model/user.model.js";
-import { fetchPermissionsById } from "../../model/permission.model.js";
+import { findUserByEmail, findUserByMobile } from "../../model/user.model.ts";
+import { fetchPermissionsById } from "../../model/permission.model.ts";
 import {
     insertOtp,
     findOtp,
     removeExpiredOtp,
-} from "../../model/otps.model.js";
+} from "../../model/otps.model.ts";
 import {
     loginValidation,
     mobileValidation,
     otpValidation,
-} from "../../validation/loginValidation.js";
-import { AppError } from "../../middleware/errorHandler.js";
+} from "../../validation/loginValidation.ts";
+import type { LoginInput } from "../../validation/loginValidation.ts";
+import { AppError } from "../../middleware/errorHandler.ts";
+import { string } from "zod";
+import type { QueryResult } from "mysql2";
 
-export const loginUser = async (userCredential) => {
+const jwtSecret = process.env.JWT_SECRET;
+if (!jwtSecret) throw Error("jwt secret required");
+
+export const loginUser = async (userCredential: LoginInput) => {
     try {
         loginValidation(userCredential);
-    } catch (error) {
+    } catch (error: any) {
         throw new AppError(error.message, 400);
     }
 
@@ -33,13 +39,17 @@ export const loginUser = async (userCredential) => {
         throw new AppError("Incorrect password", 400);
     }
 
-    let permissions;
+    let permissions: { name: string }[];
     try {
-        permissions = await fetchPermissionsById([user.role_id]);
+        permissions = (await fetchPermissionsById([user.role_id])) as {
+            name: string;
+        }[];
     } catch (error) {
         throw new AppError("Internal error", 500);
     }
-    const userPermissions = permissions.map(({ name }) => name);
+    const userPermissions = permissions.map(
+        ({ name }: { name: string }) => name,
+    );
 
     const token = jwt.sign(
         { userPermissions },
@@ -50,10 +60,10 @@ export const loginUser = async (userCredential) => {
     return { token };
 };
 
-export const sendOtp = async ({ mobile_no }) => {
+export const sendOtp = async ({ mobile_no }: { mobile_no: string }) => {
     try {
-        mobileValidation({ mobileNo: mobile_no });
-    } catch (error) {
+        mobileValidation({ mobile_no });
+    } catch (error: any) {
         throw new AppError(error.message, 400);
     }
     const result = await findUserByMobile(mobile_no);
@@ -65,7 +75,7 @@ export const sendOtp = async ({ mobile_no }) => {
     const value = [mobile_no, 123456, expiresAt];
 
     try {
-        const otpExist = await findOtp([mobile_no]);
+        const otpExist = (await findOtp([mobile_no])) as { otp: string };
         if (otpExist) {
             console.log("same otp send again ", otpExist.otp);
             return;
@@ -79,22 +89,26 @@ export const sendOtp = async ({ mobile_no }) => {
     console.log(expiresAt);
 };
 
-export const verifyOtp = async ({ mobile_no, otp }) => {
+export const verifyOtp = async ({
+    mobile_no,
+    otp,
+}: {
+    mobile_no: string;
+    otp: string;
+}) => {
     try {
-        mobileValidation({ mobileNo: mobile_no });
+        mobileValidation({ mobile_no });
         otpValidation({ otp });
-    } catch (error) {
+    } catch (error: any) {
         throw new AppError(error.message, 400);
     }
     try {
-        const otpExist = await findOtp([mobile_no]);
+        const otpExist = (await findOtp([mobile_no])) as { otp: string };
         if (otpExist) {
             if (otpExist.otp === otp) {
-                const token = jwt.sign(
-                    { mobile: mobile_no },
-                    process.env.JWT_SECRET,
-                    { expiresIn: "1h" },
-                );
+                const token = jwt.sign({ mobile: mobile_no }, jwtSecret, {
+                    expiresIn: "1h",
+                });
                 removeExpiredOtp();
                 return token;
             }

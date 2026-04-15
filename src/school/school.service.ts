@@ -4,67 +4,50 @@ import {
     updateSchoolFieldByID,
     deleteSchoolByID,
     findSchoolById,
-} from "../model/school.modal.js";
-import { getRoleIdFromAdminRole } from "../model/roles.model.js";
-import { populateSchoolFeatures } from "../model/features.model.js";
-import { insertSchoolAdmin } from "../model/user.model.js";
+} from "../model/school.modal.ts";
+import { getRoleIdFromAdminRole } from "../model/roles.model.ts";
+import { populateSchoolFeatures } from "../model/features.model.ts";
+import { insertSchoolAdmin } from "../model/user.model.ts";
 import bcrypt from "bcrypt";
-import { schoolValidation } from "../validation/schoolValidation.js";
-import pool from "../database/db.js";
+import { schoolValidation } from "../validation/schoolValidation.ts";
+import pool from "../database/db.ts";
+import type { NewSchoolDetails } from "../type/type.js";
 
 export const getAllSchoolDetails = async () => {
     const schoolDetails = await findAllSchool();
     return schoolDetails;
 };
 
-export const getSchoolDetails = async ({ id }) => {
+export const getSchoolDetails = async (id: string) => {
     const schoolDetails = await findSchoolById([id]);
     return schoolDetails;
 };
 
 const saltRounds = 10;
 
-export const createNewSchool = async (newSchoolDetails) => {
+export const createNewSchool = async (newSchoolDetails: NewSchoolDetails) => {
     // console.log(newSchoolDetails);
     try {
         schoolValidation(newSchoolDetails);
-    } catch (error) {
+    } catch (error: any) {
         throw { status: 400, message: error.message };
     }
-
-    const schoolDetailsArray = [
-        newSchoolDetails.schoolName,
-        newSchoolDetails.country,
-        newSchoolDetails.state,
-        newSchoolDetails.city,
-        newSchoolDetails.pincode,
-        newSchoolDetails.cost,
-        newSchoolDetails.studentCount,
-        newSchoolDetails.teacherCount,
-        newSchoolDetails.language,
-        newSchoolDetails.board,
-        newSchoolDetails.status,
-        newSchoolDetails.website,
-        newSchoolDetails.domains,
-        newSchoolDetails.timeZone,
-        newSchoolDetails.classCount,
-    ];
 
     const connection = await pool.getConnection();
 
     try {
         await connection.beginTransaction();
 
-        const { schoolId } = await insertSchool(connection, schoolDetailsArray);
+        const { schoolId } = await insertSchool(newSchoolDetails, connection);
 
-        const roleId = await getRoleIdFromAdminRole(connection, ["ADMIN"]);
+        const roleId = await getRoleIdFromAdminRole(["ADMIN"], connection);
 
-        await populateSchoolFeatures(connection, [schoolId]);
+        await populateSchoolFeatures([schoolId], connection);
 
         const password = "ADMIN12345";
         const hash = await bcrypt.hash(password, saltRounds);
 
-        const newUserArray = [
+        const newUserArray: string[] = [
             "ADMIN",
             roleId,
             schoolId,
@@ -74,7 +57,7 @@ export const createNewSchool = async (newSchoolDetails) => {
             newSchoolDetails.status,
         ];
 
-        await insertSchoolAdmin(connection, newUserArray);
+        await insertSchoolAdmin(newUserArray, connection);
 
         await connection.commit();
         return { email: newSchoolDetails.email, password };
@@ -87,7 +70,11 @@ export const createNewSchool = async (newSchoolDetails) => {
     }
 };
 
-export const updateSchoolField = async (schoolId, field, value) => {
+export const updateSchoolField = async (
+    schoolId: string,
+    field: string,
+    value: string,
+) => {
     if (!schoolId) {
         throw { status: 400, message: "School Id  required" };
     }
@@ -123,7 +110,7 @@ export const updateSchoolField = async (schoolId, field, value) => {
     return result;
 };
 
-export const deleteSchool = async (schoolId) => {
+export const deleteSchool = async (schoolId: string) => {
     if (!schoolId) {
         throw { status: 400, message: "School Id  required" };
     }

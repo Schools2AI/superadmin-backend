@@ -1,6 +1,6 @@
 import * as z from "zod";
 
-export const loginValidation = (obj) => {
+export const loginValidation = (obj: LoginInput) => {
     const schema = z
         .object({
             email: z.email().nonempty(),
@@ -10,8 +10,8 @@ export const loginValidation = (obj) => {
 
     schema.parse(obj);
 };
-
-export const mobileValidation = (obj) => {
+export type LoginInput = { email: string; password: string };
+export const mobileValidation = (obj: { mobile_no: string }) => {
     const schema = z
         .object({
             mobileNo: z.string().min(10).max(10).nonempty(),
@@ -20,7 +20,7 @@ export const mobileValidation = (obj) => {
     schema.parse(obj);
 };
 
-export const otpValidation = (obj) => {
+export const otpValidation = (obj: { otp: string }) => {
     const schema = z
         .object({
             otp: z.string().nonempty(),

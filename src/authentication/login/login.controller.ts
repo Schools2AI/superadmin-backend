@@ -1,8 +1,8 @@
-import { loginUser, sendOtp, verifyOtp } from "./login.service.js";
-import { catchAsync } from "../../util/catchAsync.js";
-import { AppError } from "../../middleware/errorHandler.js";
+import { loginUser, sendOtp, verifyOtp } from "./login.service.ts";
+import type { Request, Response, NextFunction } from "express";
+import { AppError } from "../../middleware/errorHandler.ts";
 
-export const loginUserController = async (req, res) => {
+export const loginUserController = async (req: Request, res: Response) => {
     console.log("loginUserController");
     const userCredential = req.body;
 
@@ -11,12 +11,20 @@ export const loginUserController = async (req, res) => {
     res.status(200).json({ isSuccess: true, token });
 };
 
-export const sendOtpController = async (req, res, next) => {
+export const sendOtpController = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
     await sendOtp(req.body);
     res.status(200).send("OTP sent");
 };
 
-export const verifyOtpController = async (req, res, next) => {
+export const verifyOtpController = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
     const token = await verifyOtp(req.body);
     if (token) {
         res.cookie("token", token, {
@@ -32,7 +40,7 @@ export const verifyOtpController = async (req, res, next) => {
     }
 };
 
-export const logoutController = (req, res) => {
+export const logoutController = (req: Request, res: Response) => {
     res.clearCookie("token");
 
     return res.status(200).json({

@@ -1,15 +1,17 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { findUserByEmail, insertUser } from "../../model/user.model.js";
-import { singupValidation } from "../../validation/signup.validation..js";
-import { AppError } from "../../middleware/errorHandler.js";
-
+import { findUserByEmail, insertUser } from "../../model/user.model.ts";
+import { singupValidation } from "../../validation/signup.validation.ts";
+import { AppError } from "../../middleware/errorHandler.ts";
+import type { SignupUser } from "../../validation/signup.validation.ts";
+const jwtSecret = process.env.JWT_SECRET;
+if (!jwtSecret) throw Error("Jwt Secret is required");
 const saltRounds = 10;
-export const singupUser = async (newUser) => {
+export const singupUser = async (newUser: SignupUser) => {
     console.log("singupUser");
     try {
         singupValidation(newUser);
-    } catch (error) {
+    } catch (error: any) {
         throw new AppError(error.message, 400);
     }
 
@@ -24,7 +26,7 @@ export const singupUser = async (newUser) => {
 
     const hash = await bcrypt.hash(newUser.password, saltRounds);
 
-    const values = [
+    const values: (string | number)[] = [
         newUser.name, // full_name
         newUser.role_id, // role_id
         newUser.email,
@@ -34,7 +36,7 @@ export const singupUser = async (newUser) => {
     ];
     const result = await insertUser(values);
 
-    const token = jwt.sign({ mobile: newUser.mobile }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ mobile: newUser.mobile_no }, jwtSecret, {
         expiresIn: "1h",
     });
 

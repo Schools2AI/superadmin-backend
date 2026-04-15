@@ -1,6 +1,9 @@
-import pool from "../database/db.js";
+import pool from "../database/db.ts";
 
-export const fetchPermissionsById = async (value, connection = null) => {
+export const fetchPermissionsById = async (
+    value: string,
+    connection = null,
+) => {
     const db = connection || pool;
     const sql = `
         SELECT p.name

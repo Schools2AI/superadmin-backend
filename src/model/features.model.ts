@@ -1,12 +1,15 @@
-import pool from "../database/db.js";
-
-export const insertFeature = async (value) => {
+import pool from "../database/db.ts";
+import type { Pool, PoolConnection, ResultSetHeader } from "mysql2/promise";
+export const insertFeature = async (value: string[]) => {
     const sql = `INSERT INTO features (feature_name ,description) VALUES (?, ?)`;
     const [result] = await pool.execute(sql, value);
     return result;
 };
 
-export const populateSchoolFeatures = async (connection = null, value) => {
+export const populateSchoolFeatures = async (
+    value: number[],
+    connection: PoolConnection | null = null,
+) => {
     const db = connection || pool;
     const sql = `INSERT INTO school_features (school_id, feature_id)
 SELECT ?, id FROM features;
@@ -16,7 +19,7 @@ SELECT ?, id FROM features;
     return result;
 };
 
-export const findFeatureById = async (value) => {
+export const findFeatureById = async (value: string[]) => {
     const sql = `SELECT 
     sf.feature_id,
     f.feature_name,
@@ -30,7 +33,7 @@ WHERE sf.school_id = ?;
     return result;
 };
 
-export const toggleFeatureModel = async (value) => {
+export const toggleFeatureModel = async (value: string[]) => {
     const sql = `UPDATE school_features
 SET is_enabled = NOT is_enabled,
     enabled_at = CASE 

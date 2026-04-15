@@ -5,8 +5,8 @@ import {
     updateSchoolFieldController,
     deleteSchoolController,
     getSchoolDetailsController,
-} from "./school.controller.js";
-import { RBAC } from "../middleware/RBAC.middleware.js";
+} from "./school.controller.ts";
+import { RBAC } from "../middleware/RBAC.middleware.ts";
 const router = express.Router();
 
 router.get(

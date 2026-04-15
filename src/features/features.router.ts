@@ -4,7 +4,7 @@ import {
     createFeatureController,
     getFeatureController,
     toggleFeatureController,
-} from "./features.controller.js";
+} from "./features.controller.ts";
 
 router.post("/create", createFeatureController);
 router.get("/view/:id", getFeatureController);

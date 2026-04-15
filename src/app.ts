@@ -1,19 +1,19 @@
 import express from "express";
-import authRouter from "./authentication/auth.router.js";
-import schoolRouter from "./school/school.router.js";
+import authRouter from "./authentication/auth.router.ts";
+import schoolRouter from "./school/school.router.ts";
 import helmet from "helmet";
-import rolesRouter from "./role/roles.router.js";
-import featuresRouter from "./features/features.router.js";
+import rolesRouter from "./role/roles.router.ts";
+import featuresRouter from "./features/features.router.ts";
 import cors from "cors";
-import { authMiddleware } from "./middleware/auth.middleware.js";
-import { errorHandler } from "./middleware/errorHandler.js";
+import { authMiddleware } from "./middleware/auth.middleware.ts";
+import { errorHandler } from "./middleware/errorHandler.ts";
 
-import setupDatabase from "./database/setup_db.js";
+import setupDatabase from "./database/setup_db.ts";
 
 const app = express();
 
 // Initialize database
-setupDatabase().catch((err) => {
+setupDatabase().catch((err: Error) => {
     console.error("Failed to initialize database:", err);
 });
 

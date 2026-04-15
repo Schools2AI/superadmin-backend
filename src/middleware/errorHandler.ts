@@ -1,5 +1,9 @@
+import type { Request, Response, NextFunction } from "express";
 export class AppError extends Error {
-    constructor(message, statusCode = 500) {
+    statusCode: number;
+    status: string;
+    isOperational: boolean;
+    constructor(message: string, statusCode = 500) {
         super(message);
         this.statusCode = statusCode;
         this.status = `${statusCode}`.startsWith("4") ? "fail" : "error";
@@ -9,7 +13,12 @@ export class AppError extends Error {
     }
 }
 
-export const errorHandler = (err, req, res, next) => {
+export const errorHandler = (
+    err: AppError,
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
     err.statusCode = err.statusCode || 500;
     err.status = err.status || "error";
 

@@ -2,8 +2,11 @@ import {
     insertFeature,
     findFeatureById,
     toggleFeatureModel,
-} from "../model/features.model.js";
-export const createFeature = async (newFeature) => {
+} from "../model/features.model.ts";
+export const createFeature = async (newFeature: {
+    feature_name: string;
+    description: string;
+}) => {
     const value = [newFeature.feature_name, newFeature.description];
     try {
         const status = await insertFeature(value);
@@ -13,7 +16,7 @@ export const createFeature = async (newFeature) => {
     }
 };
 
-export const getFeature = async ({ id }) => {
+export const getFeature = async (id: string) => {
     try {
         const feature = await findFeatureById([id]);
         return feature;
@@ -23,7 +26,13 @@ export const getFeature = async ({ id }) => {
     }
 };
 
-export const toggleFeature = async ({ featureId, schoolId }) => {
+export const toggleFeature = async ({
+    featureId,
+    schoolId,
+}: {
+    featureId: string;
+    schoolId: string;
+}) => {
     console.log(featureId);
     console.log(schoolId);
     try {
