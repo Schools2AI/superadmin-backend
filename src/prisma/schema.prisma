@@ -1,0 +1,860 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model Chat_feedback {
+  id          Int       @id @default(autoincrement())
+  userMessage String?   @db.LongText
+  botResponse String?   @db.LongText
+  created_at  DateTime? @default(now()) @db.Timestamp(0)
+  feedback    String?   @db.VarChar(255)
+}
+
+model admin_chapters_master {
+  chapter_id     Int                           @id @default(autoincrement())
+  board_name     String                        @db.VarChar(255)
+  class_id       Int
+  language       String                        @db.VarChar(255)
+  subject_id     Int
+  chapter_name   String                        @db.VarChar(255)
+  chapter_order  Int?
+  status         admin_chapters_master_status? @default(active)
+  admin_classes  admin_classes                 @relation(fields: [class_id], references: [class_id], onUpdate: Restrict, map: "admin_chapters_master_ibfk_1")
+  admin_subjects admin_subjects                @relation(fields: [subject_id], references: [subject_id], onUpdate: Restrict, map: "admin_chapters_master_ibfk_2")
+
+  @@index([class_id], map: "class_id")
+  @@index([subject_id], map: "subject_id")
+}
+
+model admin_class_course_map {
+  class_id       Int
+  section_id     Int
+  course_id      BigInt
+  admin_classes  admin_classes  @relation(fields: [class_id], references: [class_id], onDelete: Cascade, map: "admin_class_course_map_ibfk_1")
+  admin_sections admin_sections @relation(fields: [section_id], references: [section_id], onUpdate: Restrict, map: "admin_class_course_map_ibfk_2")
+  admin_courses  admin_courses  @relation(fields: [course_id], references: [course_id], onDelete: Cascade, map: "admin_class_course_map_ibfk_3")
+
+  @@id([class_id, section_id, course_id])
+  @@unique([class_id, course_id], map: "admin_class_course_map_course_id_class_id_unique")
+  @@index([course_id], map: "course_id")
+  @@index([section_id], map: "section_id")
+}
+
+model admin_class_subjects {
+  class_subject_id      BigInt                       @id @default(autoincrement())
+  class_id              Int
+  subject_id            Int
+  language              String                       @db.VarChar(255)
+  ai_enabled            Boolean?                     @default(false)
+  status                admin_class_subjects_status? @default(active)
+  admin_classes         admin_classes                @relation(fields: [class_id], references: [class_id], onDelete: Cascade, map: "admin_class_subjects_ibfk_1")
+  admin_subjects_master admin_subjects_master        @relation(fields: [subject_id], references: [subject_id], onDelete: NoAction, map: "admin_class_subjects_ibfk_2")
+
+  @@index([class_id], map: "class_id")
+  @@index([subject_id], map: "subject_id")
+}
+
+model admin_classes {
+  class_id                      Int                             @id @default(autoincrement())
+  class_name                    String                          @db.VarChar(50)
+  admin_chapters_master         admin_chapters_master[]
+  admin_class_course_map        admin_class_course_map[]
+  admin_class_subjects          admin_class_subjects[]
+  admin_sections                admin_sections[]
+  student_class_section         student_class_section[]
+  teacher_class_section_subject teacher_class_section_subject[]
+}
+
+model admin_courses {
+  course_id              BigInt                     @id @default(autoincrement())
+  school_id              BigInt?
+  course_name            String?                    @db.VarChar(255)
+  course_type            admin_courses_course_type?
+  language               String?                    @db.VarChar(255)
+  ai_features            String?                    @db.LongText
+  status                 admin_courses_status?
+  admin_class_course_map admin_class_course_map[]
+  admin_subjects         admin_subjects[]
+}
+
+model admin_permissions {
+  permission_id          Int                      @id @default(autoincrement())
+  permission_key         String                   @unique(map: "permission_key") @db.VarChar(100)
+  description            String?                  @db.VarChar(255)
+  admin_role_permissions admin_role_permissions[]
+}
+
+model admin_role_permissions {
+  id                Int               @id @default(autoincrement())
+  role_id           Int
+  permission_id     Int
+  admin_roles       admin_roles       @relation(fields: [role_id], references: [role_id], onUpdate: Restrict, map: "admin_role_permissions_ibfk_1")
+  admin_permissions admin_permissions @relation(fields: [permission_id], references: [permission_id], onUpdate: Restrict, map: "admin_role_permissions_ibfk_2")
+
+  @@index([permission_id], map: "permission_id")
+  @@index([role_id], map: "role_id")
+}
+
+model admin_roles {
+  role_id                Int                      @id @default(autoincrement())
+  role_name              String                   @unique(map: "role_name") @db.VarChar(50)
+  description            String?                  @db.VarChar(255)
+  admin_role_permissions admin_role_permissions[]
+  users                  users[]
+}
+
+model admin_schools {
+  school_id           BigInt                @id @default(autoincrement())
+  school_name         String                @db.VarChar(255)
+  country             String?               @db.VarChar(100)
+  state               String?               @db.VarChar(100)
+  city                String?               @db.VarChar(100)
+  pincode             String?               @db.VarChar(20)
+  timezone            String?               @db.VarChar(50)
+  board               String?               @db.VarChar(50)
+  language_preference String?               @db.VarChar(50)
+  cost                Decimal?              @default(0.00) @db.Decimal(10, 2)
+  student_count       Int?                  @default(0)
+  teacher_count       Int?                  @default(0)
+  class_count         Int?
+  onboard_date        DateTime?             @db.DateTime(0)
+  STATUS              admin_schools_STATUS? @default(Trial)
+  website_enabled     Boolean?              @default(false)
+  allowed_domains     String?               @db.Text
+  created_at          DateTime?             @default(now()) @db.DateTime(0)
+}
+
+model admin_sections {
+  section_id                    Int                             @id @default(autoincrement())
+  class_id                      Int
+  section_name                  String                          @db.VarChar(255)
+  school_id                     BigInt
+  admin_class_course_map        admin_class_course_map[]
+  admin_classes                 admin_classes                   @relation(fields: [class_id], references: [class_id], onDelete: Cascade, map: "admin_sections_ibfk_1")
+  student_class_section         student_class_section[]
+  teacher_class_section_subject teacher_class_section_subject[]
+
+  @@index([class_id], map: "class_id")
+  @@index([school_id], map: "idx_school_id")
+}
+
+model admin_subjects {
+  subject_id                    Int                             @id @default(autoincrement())
+  class_id                      Int
+  board                         String                          @db.VarChar(255)
+  language                      String                          @db.VarChar(255)
+  subject_name                  String                          @db.VarChar(255)
+  course_id                     BigInt?
+  admin_chapters_master         admin_chapters_master[]
+  admin_courses                 admin_courses?                  @relation(fields: [course_id], references: [course_id], map: "admin_subjects_ibfk_1")
+  teacher_class_section_subject teacher_class_section_subject[]
+
+  @@index([course_id], map: "course_id")
+}
+
+model admin_subjects_master {
+  subject_id           Int                    @id @default(autoincrement())
+  subject_name         String?                @db.VarChar(255)
+  admin_class_subjects admin_class_subjects[]
+}
+
+model admin_users {
+  user_id      BigInt              @id @default(autoincrement())
+  school_id    BigInt?
+  role_id      Int?
+  username     String?             @db.VarChar(255)
+  full_name    String?             @db.VarChar(255)
+  password     String?             @db.VarChar(255)
+  phone_number String?             @db.VarChar(255)
+  email        String?             @db.VarChar(255)
+  status       admin_users_status?
+  created_at   DateTime            @db.DateTime(0)
+  updated_at   DateTime            @db.DateTime(0)
+}
+
+model ai_notes {
+  id           Int      @id @default(autoincrement())
+  language     String   @db.VarChar(255)
+  board        String   @db.VarChar(255)
+  class        String   @db.VarChar(255)
+  subject      String   @db.VarChar(255)
+  topic        String   @db.VarChar(255)
+  short_notes  String?  @db.Text
+  full_notes   String?  @db.Text
+  book_url     String?  @db.Text
+  generated_by String?  @default("AI") @db.VarChar(255)
+  created_at   DateTime @db.DateTime(0)
+  updated_at   DateTime @db.DateTime(0)
+}
+
+model ai_usage_logs {
+  id               BigInt                 @id @default(autoincrement())
+  user_id          BigInt?
+  feature          ai_usage_logs_feature?
+  action           String?                @db.VarChar(255)
+  endpoint         String?                @db.VarChar(255)
+  request_payload  String?                @db.LongText
+  response_data    String?                @db.LongText
+  response_status  Int?
+  response_time_ms Int?
+  ip_address       String?                @db.VarChar(255)
+  error_message    String?                @db.Text
+  created_at       DateTime               @db.DateTime(0)
+  updated_at       DateTime               @db.DateTime(0)
+}
+
+model app_feedback {
+  id         Int       @id @default(autoincrement())
+  name       String    @db.VarChar(255)
+  email      String    @db.VarChar(255)
+  subject    String    @db.VarChar(255)
+  message    String    @db.Text
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model assessment_assignments {
+  assignment_id           BigInt             @id @default(autoincrement())
+  assessment_id           BigInt
+  class_id                Int
+  section_ids             String             @db.LongText
+  start_datetime          DateTime           @db.DateTime(0)
+  end_datetime            DateTime           @db.DateTime(0)
+  shuffle_questions       Boolean?           @default(false)
+  shuffle_options         Boolean?           @default(false)
+  show_result_immediately Boolean?           @default(false)
+  assigned_by             BigInt
+  created_at              DateTime           @db.DateTime(0)
+  updated_at              DateTime           @db.DateTime(0)
+  assessments             assessments        @relation(fields: [assessment_id], references: [assessment_id], onDelete: Cascade, map: "assessment_assignments_ibfk_1")
+  student_attempts        student_attempts[]
+
+  @@index([assessment_id], map: "assessment_id")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model assessment_questions {
+  question_id     BigInt                             @id @default(autoincrement())
+  assessment_id   BigInt
+  question_text   String                             @db.Text
+  question_type   assessment_questions_question_type
+  options         String?                            @db.LongText
+  correct_answer  String?                            @db.VarChar(255)
+  hint            String?                            @db.Text
+  marks           Int?                               @default(1)
+  status          assessment_questions_status?       @default(pending)
+  order           Int?                               @default(0)
+  created_at      DateTime                           @db.DateTime(0)
+  updated_at      DateTime                           @db.DateTime(0)
+  assessments     assessments                        @relation(fields: [assessment_id], references: [assessment_id], onDelete: Cascade, map: "assessment_questions_ibfk_1")
+  student_answers student_answers[]
+
+  @@index([assessment_id], map: "assessment_id")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model assessments {
+  assessment_id          BigInt                    @id @default(autoincrement())
+  school_id              BigInt
+  created_by             BigInt
+  title                  String                    @db.VarChar(255)
+  subject_id             Int
+  class_id               Int
+  topic                  String?                   @db.VarChar(255)
+  difficulty             assessments_difficulty?   @default(medium)
+  total_marks            Int?                      @default(0)
+  time_limit_minutes     Int?
+  question_types_allowed String?                   @db.LongText
+  status                 assessments_status?       @default(draft)
+  generated_by           assessments_generated_by? @default(AI)
+  created_at             DateTime                  @db.DateTime(0)
+  updated_at             DateTime                  @db.DateTime(0)
+  assessment_assignments assessment_assignments[]
+  assessment_questions   assessment_questions[]
+  users                  users                     @relation(fields: [created_by], references: [user_id], onDelete: Cascade, map: "assessments_ibfk_1")
+
+  @@index([created_by], map: "created_by")
+}
+
+model chatbot_logs {
+  id              Int       @id @default(autoincrement())
+  conversation_id String?   @db.VarChar(100)
+  user_id         Int
+  method          String?   @db.VarChar(10)
+  url             String?   @db.VarChar(255)
+  status_code     Int?
+  device          String?   @db.Text
+  messages        String?   @db.LongText
+  language        String?   @db.VarChar(20)
+  class           String?   @db.VarChar(20)
+  subject         String?   @db.VarChar(100)
+  file_name       String?   @db.VarChar(255)
+  response_body   String?   @db.LongText
+  created_at      DateTime? @db.Timestamp(0)
+}
+
+model feature_overrides {
+  id          BigInt                        @id @default(autoincrement())
+  school_id   BigInt
+  feature_id  Int
+  target_type feature_overrides_target_type
+  target_id   BigInt?
+  target_role String?                       @db.VarChar(40)
+  is_enabled  Boolean                       @default(true)
+  granted_by  BigInt?
+  created_at  DateTime?                     @db.DateTime(0)
+}
+
+model features {
+  id              Int               @id @default(autoincrement())
+  feature_name    String            @db.VarChar(255)
+  description     String?           @db.Text
+  is_ai           Boolean?          @default(false)
+  created_at      DateTime?         @default(now()) @db.DateTime(0)
+  school_features school_features[]
+}
+
+model monthly_progress {
+  id               Int      @id @default(autoincrement())
+  student_id       Int
+  subject_id       Int
+  year             Int      @db.Year
+  month            Int      @db.TinyInt
+  score_percentage Decimal? @db.Decimal(5, 2)
+  students         students @relation(fields: [student_id], references: [id], onUpdate: Restrict, map: "monthly_progress_ibfk_1")
+  subjects         subjects @relation(fields: [subject_id], references: [id], onUpdate: Restrict, map: "monthly_progress_ibfk_2")
+
+  @@index([student_id], map: "student_id")
+  @@index([subject_id], map: "subject_id")
+}
+
+model otps {
+  id              Int       @id @default(autoincrement())
+  user_identifier String    @db.VarChar(255)
+  otp             String    @db.VarChar(10)
+  expires_at      DateTime  @db.DateTime(0)
+  created_at      DateTime? @default(now()) @db.Timestamp(0)
+}
+
+model parent_profiles {
+  parent_id          BigInt                    @id @default(autoincrement())
+  user_id            BigInt?
+  school_id          BigInt?
+  parent_name        String?                   @db.VarChar(255)
+  relation           parent_profiles_relation?
+  users              users?                    @relation(fields: [user_id], references: [user_id], onDelete: Cascade, map: "parent_profiles_ibfk_1")
+  parent_student_map parent_student_map[]
+
+  @@index([user_id], map: "user_id")
+}
+
+model parent_student_map {
+  parent_id        BigInt
+  student_id       BigInt
+  parent_profiles  parent_profiles  @relation(fields: [parent_id], references: [parent_id], onDelete: Cascade, map: "parent_student_map_ibfk_1")
+  student_profiles student_profiles @relation(fields: [student_id], references: [student_id], onDelete: Cascade, map: "parent_student_map_ibfk_2")
+
+  @@id([parent_id, student_id])
+  @@unique([parent_id, student_id], map: "parent_student_map_student_id_parent_id_unique")
+  @@index([student_id], map: "student_id")
+}
+
+model permissions {
+  id               Int                @id @default(autoincrement())
+  name             String             @unique(map: "name") @db.VarChar(255)
+  description      String?            @db.VarChar(255)
+  role_permissions role_permissions[]
+}
+
+model practice_questions {
+  id                 Int                     @id @default(autoincrement())
+  test_id            Int
+  type               practice_questions_type
+  question_id        String                  @db.Text
+  question           String                  @db.Text
+  options            String?                 @db.LongText
+  answer             String                  @db.Text
+  student_answer     String?                 @db.Text
+  created_at         DateTime?               @default(now()) @db.Timestamp(0)
+  is_correct         Boolean                 @default(false)
+  answer_explanation String                  @db.Text
+  marks              Int
+  practice_tests     practice_tests          @relation(fields: [test_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "practice_questions_ibfk_1")
+
+  @@index([test_id], map: "test_id")
+}
+
+model practice_questions_logs {
+  id              Int      @id @default(autoincrement())
+  conversation_id String   @db.VarChar(36)
+  user_id         Int
+  method          String   @db.VarChar(10)
+  url             String   @db.Text
+  status_code     Int
+  device          String?  @db.Text
+  request_body    String?  @db.LongText
+  response_body   String?  @db.LongText
+  user_details    String?  @db.LongText
+  created_at      DateTime @db.DateTime(0)
+}
+
+model practice_tests {
+  id                 Int                  @id @default(autoincrement())
+  class              String               @db.VarChar(50)
+  subject            String               @db.VarChar(100)
+  chapter            String               @db.VarChar(100)
+  language           String               @db.VarChar(50)
+  student_id         Int
+  created_at         DateTime?            @default(now()) @db.Timestamp(0)
+  practice_questions practice_questions[]
+}
+
+model questions {
+  id            Int     @id @default(autoincrement())
+  test_id       Int
+  question_text String? @db.Text
+  marks         Int?    @default(1)
+  tests         tests   @relation(fields: [test_id], references: [id], onUpdate: Restrict, map: "questions_ibfk_1")
+
+  @@index([test_id], map: "test_id")
+}
+
+model role_permissions {
+  id            Int         @id @default(autoincrement())
+  role_id       Int
+  permission_id Int
+  permissions   permissions @relation(fields: [permission_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_role_permissions_permission")
+  roles         roles       @relation(fields: [role_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_role_permissions_role")
+
+  @@index([permission_id], map: "fk_role_permissions_permission")
+  @@index([role_id], map: "fk_role_permissions_role")
+}
+
+model roles {
+  id               Int                @id @default(autoincrement())
+  role             String             @db.VarChar(100)
+  role_permissions role_permissions[]
+  super_users      super_users[]
+}
+
+model school_features {
+  id         Int       @id @default(autoincrement())
+  school_id  Int
+  feature_id Int
+  is_enabled Boolean?  @default(false)
+  enabled_at DateTime? @db.DateTime(0)
+  schools    schools   @relation(fields: [school_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "school_features_ibfk_1")
+  features   features  @relation(fields: [feature_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "school_features_ibfk_2")
+
+  @@index([feature_id], map: "feature_id")
+  @@index([school_id], map: "school_id")
+}
+
+model schools {
+  id                  Int               @id @default(autoincrement())
+  school_name         String            @db.VarChar(255)
+  country             String            @db.VarChar(100)
+  state               String            @db.VarChar(100)
+  city                String            @db.VarChar(100)
+  pincode             String            @db.VarChar(20)
+  timezone            String            @db.VarChar(50)
+  cost                Decimal?          @default(0.00) @db.Decimal(10, 2)
+  student_count       Int?              @default(0)
+  teacher_count       Int?              @default(0)
+  language_preference String?           @db.VarChar(50)
+  board               String?           @db.VarChar(50)
+  onboard_date        DateTime?         @default(now()) @db.DateTime(0)
+  status              schools_status?   @default(TRIAL)
+  website_enabled     Boolean?          @default(false)
+  allowed_domains     String?           @db.Text
+  class_count         Int?              @default(0)
+  school_features     school_features[]
+  users               users[]
+}
+
+model student_analytics {
+  student_id        BigInt           @id
+  engagement_score  Decimal?         @db.Decimal(5, 2)
+  learning_outcome  Decimal?         @db.Decimal(5, 2)
+  ai_practice_score Decimal?         @db.Decimal(5, 2)
+  student_profiles  student_profiles @relation(fields: [student_id], references: [student_id], onDelete: Cascade, map: "student_analytics_ibfk_1")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model student_answers {
+  answer_id            BigInt               @id @default(autoincrement())
+  attempt_id           BigInt
+  question_id          BigInt
+  answer_text          String?              @db.Text
+  is_correct           Boolean?
+  marks_obtained       Decimal?             @db.Decimal(6, 2)
+  created_at           DateTime             @db.DateTime(0)
+  updated_at           DateTime             @db.DateTime(0)
+  student_attempts     student_attempts     @relation(fields: [attempt_id], references: [attempt_id], onDelete: Cascade, map: "student_answers_ibfk_1")
+  assessment_questions assessment_questions @relation(fields: [question_id], references: [question_id], onDelete: NoAction, map: "student_answers_ibfk_2")
+
+  @@index([attempt_id], map: "attempt_id")
+  @@index([question_id], map: "question_id")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model student_attempts {
+  attempt_id             BigInt                   @id @default(autoincrement())
+  assignment_id          BigInt
+  student_id             BigInt
+  started_at             DateTime                 @db.DateTime(0)
+  submitted_at           DateTime?                @db.DateTime(0)
+  is_auto_submitted      Boolean?                 @default(false)
+  total_marks_obtained   Decimal?                 @db.Decimal(8, 2)
+  total_marks_possible   Int?
+  status                 student_attempts_status? @default(in_progress)
+  created_at             DateTime                 @db.DateTime(0)
+  updated_at             DateTime                 @db.DateTime(0)
+  student_answers        student_answers[]
+  assessment_assignments assessment_assignments   @relation(fields: [assignment_id], references: [assignment_id], onDelete: Cascade, map: "student_attempts_ibfk_1")
+  student_profiles       student_profiles         @relation(fields: [student_id], references: [student_id], onDelete: Cascade, map: "student_attempts_ibfk_2")
+
+  @@index([assignment_id], map: "assignment_id")
+  @@index([student_id], map: "student_id")
+}
+
+model student_class_section {
+  student_id       BigInt                        @id
+  class_id         Int?
+  section_id       Int?
+  academic_year    String?                       @db.VarChar(255)
+  roll_number      String?                       @db.VarChar(255)
+  status           student_class_section_status?
+  student_profiles student_profiles              @relation(fields: [student_id], references: [student_id], onDelete: Cascade, map: "student_class_section_ibfk_1")
+  admin_classes    admin_classes?                @relation(fields: [class_id], references: [class_id], onDelete: Cascade, map: "student_class_section_ibfk_2")
+  admin_sections   admin_sections?               @relation(fields: [section_id], references: [section_id], onDelete: Cascade, map: "student_class_section_ibfk_3")
+
+  @@index([class_id], map: "class_id")
+  @@index([section_id], map: "section_id")
+}
+
+model student_profiles {
+  student_id            BigInt                   @id @default(autoincrement())
+  user_id               BigInt?
+  school_id             BigInt?
+  preferred_language    String?                  @db.VarChar(255)
+  onboarding_date       DateTime?                @db.DateTime(0)
+  cost_limit            Decimal?                 @db.Decimal(10, 2)
+  dob                   DateTime?                @db.DateTime(0)
+  gender                student_profiles_gender?
+  analytics_enabled     Boolean?
+  created_at            DateTime                 @db.DateTime(0)
+  updated_at            DateTime                 @db.DateTime(0)
+  parent_student_map    parent_student_map[]
+  student_analytics     student_analytics?
+  student_attempts      student_attempts[]
+  student_class_section student_class_section?
+  users                 users?                   @relation(fields: [user_id], references: [user_id], onDelete: Cascade, map: "student_profiles_ibfk_1")
+
+  @@index([user_id], map: "user_id")
+}
+
+model students {
+  id               Int                @id @default(autoincrement())
+  name             String             @db.VarChar(100)
+  email            String?            @unique(map: "email") @db.VarChar(150)
+  created_at       DateTime?          @default(now()) @db.Timestamp(0)
+  monthly_progress monthly_progress[]
+  study_time       study_time[]
+  test_attempts    test_attempts[]
+}
+
+model study_time {
+  id            Int      @id @default(autoincrement())
+  student_id    Int
+  study_date    DateTime @db.Date
+  minutes_spent Int
+  students      students @relation(fields: [student_id], references: [id], onUpdate: Restrict, map: "study_time_ibfk_1")
+
+  @@index([student_id], map: "student_id")
+}
+
+model subjects {
+  id               Int                @id @default(autoincrement())
+  name             String             @db.VarChar(50)
+  monthly_progress monthly_progress[]
+  tests            tests[]
+}
+
+model super_users {
+  id         BigInt              @id @default(autoincrement())
+  full_name  String              @db.VarChar(150)
+  password   String              @db.VarChar(255)
+  contact_no String              @db.VarChar(20)
+  email      String              @db.VarChar(150)
+  role_id    Int
+  status     super_users_status? @default(ACTIVE)
+  avatar     String?             @db.VarChar(255)
+  created_at DateTime?           @default(now()) @db.DateTime(0)
+  updated_at DateTime?           @default(now()) @db.DateTime(0)
+  roles      roles               @relation(fields: [role_id], references: [id], onUpdate: Restrict, map: "fk_users_role")
+
+  @@index([role_id], map: "fk_users_role")
+}
+
+model teacher_analytics {
+  teacher_id        BigInt           @id
+  ai_usage          Decimal?         @db.Decimal(10, 2)
+  performance_score Decimal?         @db.Decimal(5, 2)
+  engagement_score  Decimal?         @db.Decimal(5, 2)
+  teacher_profiles  teacher_profiles @relation(fields: [teacher_id], references: [teacher_id], onDelete: Cascade, map: "teacher_analytics_ibfk_1")
+}
+
+model teacher_class_section_subject {
+  id               BigInt            @id @default(autoincrement())
+  teacher_id       BigInt?
+  class_id         Int?
+  section_id       Int?
+  class_subject_id Int?
+  academic_year    String?           @db.VarChar(255)
+  teacher_profiles teacher_profiles? @relation(fields: [teacher_id], references: [teacher_id], onDelete: Cascade, map: "teacher_class_section_subject_ibfk_1")
+  admin_classes    admin_classes?    @relation(fields: [class_id], references: [class_id], onDelete: Cascade, map: "teacher_class_section_subject_ibfk_2")
+  admin_sections   admin_sections?   @relation(fields: [section_id], references: [section_id], onDelete: Cascade, map: "teacher_class_section_subject_ibfk_3")
+  admin_subjects   admin_subjects?   @relation(fields: [class_subject_id], references: [subject_id], onDelete: Cascade, map: "teacher_class_section_subject_ibfk_4")
+
+  @@index([class_id], map: "class_id")
+  @@index([class_subject_id], map: "class_subject_id")
+  @@index([section_id], map: "section_id")
+  @@index([teacher_id], map: "teacher_id")
+}
+
+model teacher_profiles {
+  teacher_id                    BigInt                          @id @default(autoincrement())
+  user_id                       BigInt?
+  school_id                     BigInt?
+  primary_subject_id            Int?
+  secondary_subject_ids         String?                         @db.LongText
+  experience                    Int?
+  age                           Int?
+  onboarding_date               DateTime?                       @db.DateTime(0)
+  school_tenure                 Int?
+  device_type                   String?                         @db.VarChar(255)
+  device_access                 String?                         @db.LongText
+  ppt_generation_enabled        Boolean?
+  cost_limit                    Decimal?                        @db.Decimal(10, 2)
+  created_at                    DateTime                        @db.DateTime(0)
+  updated_at                    DateTime                        @db.DateTime(0)
+  teacher_analytics             teacher_analytics?
+  teacher_class_section_subject teacher_class_section_subject[]
+  users                         users?                          @relation(fields: [user_id], references: [user_id], onDelete: Cascade, map: "teacher_profiles_ibfk_1")
+
+  @@index([user_id], map: "user_id")
+}
+
+model test_attempts {
+  id           Int       @id @default(autoincrement())
+  student_id   Int
+  test_id      Int
+  score        Int
+  attempted_at DateTime? @default(now()) @db.Timestamp(0)
+  students     students  @relation(fields: [student_id], references: [id], onUpdate: Restrict, map: "test_attempts_ibfk_1")
+  tests        tests     @relation(fields: [test_id], references: [id], onUpdate: Restrict, map: "test_attempts_ibfk_2")
+
+  @@index([student_id], map: "student_id")
+  @@index([test_id], map: "test_id")
+}
+
+model tests {
+  id            Int             @id @default(autoincrement())
+  subject_id    Int
+  title         String?         @db.VarChar(150)
+  total_marks   Int
+  created_at    DateTime?       @default(now()) @db.Timestamp(0)
+  questions     questions[]
+  test_attempts test_attempts[]
+  subjects      subjects        @relation(fields: [subject_id], references: [id], onUpdate: Restrict, map: "tests_ibfk_1")
+
+  @@index([subject_id], map: "subject_id")
+}
+
+model tutor_logs {
+  id              BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  conversation_id String    @db.VarChar(255)
+  user_id         BigInt?   @db.UnsignedBigInt
+  method          String    @db.VarChar(10)
+  url             String    @db.Text
+  status_code     Int?
+  device          String?   @db.VarChar(100)
+  request_body    String?   @db.LongText
+  response_body   String?   @db.LongText
+  created_at      DateTime? @default(now()) @db.Timestamp(0)
+  user_details    String?   @db.LongText
+  session_id      String    @db.VarChar(255)
+
+  @@index([user_id], map: "idx_tutor_logs_user_id")
+}
+
+model user_sessions {
+  session_id BigInt    @id @default(autoincrement())
+  user_id    BigInt
+  login_at   DateTime  @db.DateTime(0)
+  logout_at  DateTime? @db.DateTime(0)
+  device     String?   @db.VarChar(50)
+  ip_address String?   @db.VarChar(50)
+  city       String?   @db.VarChar(100)
+  country    String?   @db.VarChar(100)
+  users      users     @relation(fields: [user_id], references: [user_id], onDelete: Cascade, map: "user_sessions_ibfk_1")
+
+  @@index([user_id], map: "user_id")
+}
+
+model users {
+  user_id          BigInt             @id @default(autoincrement())
+  school_id        Int?
+  role_id          Int?
+  username         String?            @unique(map: "uq_users_username") @db.VarChar(255)
+  full_name        String?            @db.VarChar(255)
+  password         String?            @db.VarChar(255)
+  phone_number     String?            @unique(map: "uq_users_phone") @db.VarChar(20)
+  email            String?            @unique(map: "uq_users_email") @db.VarChar(255)
+  status           users_status?
+  avatar           String?            @db.VarChar(255)
+  created_at       DateTime           @db.DateTime(0)
+  updated_at       DateTime           @db.DateTime(0)
+  assessments      assessments[]
+  parent_profiles  parent_profiles[]
+  student_profiles student_profiles[]
+  teacher_profiles teacher_profiles[]
+  user_sessions    user_sessions[]
+  admin_roles      admin_roles?       @relation(fields: [role_id], references: [role_id], map: "fk_users_role_id")
+  schools          schools?           @relation(fields: [school_id], references: [id], map: "fk_users_school_id")
+
+  @@index([role_id], map: "fk_users_role_id")
+  @@index([school_id], map: "fk_users_school_id")
+}
+
+enum ai_usage_logs_feature {
+  summarizer
+  ai_notes
+}
+
+enum practice_questions_type {
+  MCQ
+  SA
+  LA
+}
+
+enum feature_overrides_target_type {
+  class
+  section
+  role
+  user
+}
+
+enum admin_courses_course_type {
+  SCHOOL
+  JEE
+  NEET
+  UPSC
+  AI
+  OTHER
+}
+
+enum assessment_questions_question_type {
+  mcq
+  true_false
+  short
+  essay
+}
+
+enum parent_profiles_relation {
+  father
+  mother
+  guardian
+}
+
+enum admin_class_subjects_status {
+  active
+  inactive
+}
+
+enum student_class_section_status {
+  active
+  inactive
+}
+
+enum super_users_status {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum admin_courses_status {
+  active
+  inactive
+}
+
+enum student_profiles_gender {
+  male
+  female
+  other
+}
+
+enum admin_chapters_master_status {
+  active
+  inactive
+}
+
+enum assessments_difficulty {
+  easy
+  medium
+  hard
+}
+
+enum admin_users_status {
+  active
+  suspended
+  blocked
+}
+
+enum users_status {
+  Active
+  Suspended
+  Blocked
+}
+
+enum student_attempts_status {
+  in_progress
+  submitted
+}
+
+enum assessment_questions_status {
+  pending
+  approved
+  rejected
+}
+
+enum assessments_status {
+  draft
+  published
+  archived
+}
+
+enum assessments_generated_by {
+  AI
+  TEACHER
+}
+
+enum schools_status {
+  ACTIVE
+  SUSPENDED
+  TRIAL
+  ARCHIVED
+}
+
+enum admin_schools_STATUS {
+  Active
+  Suspended
+  Trial
+  Archived
+}

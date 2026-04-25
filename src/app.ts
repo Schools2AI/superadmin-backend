@@ -7,6 +7,8 @@ import featuresRouter from "./features/features.router.ts";
 import cors from "cors";
 import { authMiddleware } from "./middleware/auth.middleware.ts";
 import { errorHandler } from "./middleware/errorHandler.ts";
+import dotEnv from "dotenv";
+dotEnv.config({ path: process.cwd() + "/config.env" });
 
 import setupDatabase from "./database/setup_db.ts";
 

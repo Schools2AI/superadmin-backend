@@ -4,7 +4,7 @@
         "module": "nodenext",
         "moduleResolution": "nodenext",
         "outDir": "./dist",
-        "rootDir": "./src",
+        "rootDir": "./",
         "strict": true,
         "esModuleInterop": true,
         "skipLibCheck": true,
@@ -12,6 +12,6 @@
         "declaration": true,
         "rewriteRelativeImportExtensions": true
     },
-    "include": ["src/**/*"],
+    "include": ["src/**/*", "prisma.config.ts", "generated/**/*"],
     "exclude": ["node_modules", "dist"]
 }
