@@ -7,6 +7,7 @@ import featuresRouter from "./features/features.router.ts";
 import cors from "cors";
 import { authMiddleware } from "./middleware/auth.middleware.ts";
 import { errorHandler } from "./middleware/errorHandler.ts";
+import curriculumRouter from "./curriculum/curriculum.router.ts"
 
 import setupDatabase from "./database/setup_db.ts";
 
@@ -31,6 +32,7 @@ app.use("/auth", authRouter);
 app.use("/school", authMiddleware, schoolRouter);
 app.use("/roles", authMiddleware, rolesRouter);
 app.use("/features", authMiddleware, featuresRouter);
+app.use("/api/v1/curriculum",curriculumRouter)
 
 // Global error handler
 app.use(errorHandler);
