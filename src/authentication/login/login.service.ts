@@ -50,7 +50,7 @@ export const loginUser = async (userCredential: LoginInput) => {
     );
 
     const token = jwt.sign(
-        { userPermissions },
+        { userPermissions , roleId : user.role_id },
         process.env.JWT_SECRET || "secret key",
         { expiresIn: "1h" },
     );
