@@ -18,4 +18,4 @@ export async function updatedPermission(req : Request,res : Response){
 export async function getAllPermissions(req : Request,res : Response) {
     const data  = await PermissionService.getAllPermission()
     res.status(200).json({data, success: true})
-}
+}   

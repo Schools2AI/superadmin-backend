@@ -8,7 +8,9 @@
 				"--network",
 				"dev-net",
 				"-p",
-				"3000:3000"
+				"3000:3000",
+				"--name",
+				"super_admin"
 				
 			]
 

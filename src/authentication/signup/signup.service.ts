@@ -45,3 +45,5 @@ export const singupUser = async (newUser: SignupUser) => {
         token,
     };
 };
+
+

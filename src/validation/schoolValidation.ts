@@ -35,9 +35,9 @@ const schema = z
 
         language: z.string().min(1),
 
-        board: z.enum(["CBSE", "ICSE", "State", "IB", "BSEB"]),
+        board: z.string(),
 
-        status: z.enum(["Active", "Inactive"]),
+        status: z.string(),
 
         website: z.boolean(),
 
