@@ -41,7 +41,7 @@ export const loginUser = async (userCredential: LoginInput) => {
 
     let permissions: { name: string }[];
     try {
-        permissions = await fetchPermissionsById([user.role_id]);
+        permissions = await fetchPermissionsById(user.role_id);
     } catch (error) {
         throw new AppError("Internal error", 500);
     }
@@ -50,70 +50,70 @@ export const loginUser = async (userCredential: LoginInput) => {
     );
 
     const token = jwt.sign(
-        { userPermissions , roleId : user.role_id },
+        { userPermissions , roleId : user.role_id, userId : user.id },
         process.env.JWT_SECRET || "secret key",
-        { expiresIn: "1h" },
+        { expiresIn: "1YEAR" },
     );
 
     return { token };
 };
 
-export const sendOtp = async ({ mobile_no }: { mobile_no: string }) => {
-    try {
-        mobileValidation({ mobile_no });
-    } catch (error: any) {
-        throw new AppError(error.message, 400);
-    }
-    const result = await findUserByMobile(mobile_no);
-    if (!result) {
-        throw new AppError("User not found", 404);
-    }
-    const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+// export const sendOtp = async ({ mobile_no }: { mobile_no: string }) => {
+//     try {
+//         mobileValidation({ mobile_no });
+//     } catch (error: any) {
+//         throw new AppError(error.message, 400);
+//     }
+//     const result = await findUserByMobile(mobile_no);
+//     if (!result) {
+//         throw new AppError("User not found", 404);
+//     }
+//     const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
-    const value = [mobile_no, 123456, expiresAt];
+//     const value = [mobile_no, 123456, expiresAt];
 
-    try {
-        const otpExist = (await findOtp([mobile_no])) as { otp: string };
-        if (otpExist) {
-            console.log("same otp send again ", otpExist.otp);
-            return;
-        }
-        const result = await insertOtp(value);
-        console.log(result);
-    } catch (error) {
-        throw new AppError("Database error", 500);
-    }
+//     try {
+//         const otpExist = (await findOtp([mobile_no])) as { otp: string };
+//         if (otpExist) {
+//             console.log("same otp send again ", otpExist.otp);
+//             return;
+//         }
+//         const result = await insertOtp(value);
+//         console.log(result);
+//     } catch (error) {
+//         throw new AppError("Database error", 500);
+//     }
 
-    console.log(expiresAt);
-};
+//     console.log(expiresAt);
+// };
 
-export const verifyOtp = async ({
-    mobile_no,
-    otp,
-}: {
-    mobile_no: string;
-    otp: string;
-}) => {
-    try {
-        mobileValidation({ mobile_no });
-        otpValidation({ otp });
-    } catch (error: any) {
-        throw new AppError(error.message, 400);
-    }
-    try {
-        const otpExist = (await findOtp([mobile_no])) as { otp: string };
-        if (otpExist) {
-            if (otpExist.otp === otp) {
-                const token = jwt.sign({ mobile: mobile_no }, jwtSecret, {
-                    expiresIn: "1h",
-                });
-                removeExpiredOtp();
-                return token;
-            }
-        }
+// export const verifyOtp = async ({
+//     mobile_no,
+//     otp,
+// }: {
+//     mobile_no: string;
+//     otp: string;
+// }) => {
+//     try {
+//         mobileValidation({ mobile_no });
+//         otpValidation({ otp });
+//     } catch (error: any) {
+//         throw new AppError(error.message, 400);
+//     }
+//     try {
+//         const otpExist = (await findOtp([mobile_no])) as { otp: string };
+//         if (otpExist) {
+//             if (otpExist.otp === otp) {
+//                 const token = jwt.sign({ mobile: mobile_no }, jwtSecret, {
+//                     expiresIn: "1h",
+//                 });
+//                 removeExpiredOtp();
+//                 return token;
+//             }
+//         }
 
-        return false;
-    } catch (error) {
-        throw new AppError("Database error", 500);
-    }
-};
+//         return false;
+//     } catch (error) {
+//         throw new AppError("Database error", 500);
+//     }
+// };

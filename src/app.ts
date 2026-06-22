@@ -33,7 +33,7 @@ app.use("/auth", authRouter);
 app.use("/school", authMiddleware, schoolRouter);
 app.use("/roles", authMiddleware, rolesRouter);
 app.use("/features", authMiddleware, featuresRouter);
-app.use("/api/v1/curriculum",curriculumRouter)
+app.use("/api/v1/curriculum",authMiddleware,curriculumRouter)
 app.use("/api/v1/permission",authMiddleware, permissionRouter)
 
 // Global error handler

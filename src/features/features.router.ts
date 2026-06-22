@@ -5,9 +5,10 @@ import {
     getFeatureController,
     toggleFeatureController,
 } from "./features.controller.ts";
+import { RBAC } from "../middleware/RBAC.middleware.ts";
 
-router.post("/create", createFeatureController);
-router.get("/view/:id", getFeatureController);
-router.post("/toggle", toggleFeatureController);
+router.post("/create",RBAC("FEATURE:CREATE"), createFeatureController);
+router.get("/view/:id",RBAC("FEATURE:VIEW"), getFeatureController);
+router.post("/toggle",RBAC("FEATURE:EDIT"), toggleFeatureController);
 
 export default router;

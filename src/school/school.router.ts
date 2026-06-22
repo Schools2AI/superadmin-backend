@@ -14,9 +14,9 @@ router.get(
     RBAC("SCHOOL:VIEW"),
     getAllSchoolDetailsController,
 );
-router.get("/view/:id", getSchoolDetailsController);
+router.get("/view/:id",RBAC("SCHOOL:VIEW"), getSchoolDetailsController);
 router.post("/create", RBAC("SCHOOL:CREATE"), createNewSchoolController);
-router.patch("/update/:id", updateSchoolFieldController);
-router.delete("/delete/:id", deleteSchoolController);
+router.patch("/update/:id",RBAC("SCHOOL:EDIT"), updateSchoolFieldController);
+router.delete("/delete/:id",RBAC("SCHOOL:DELETE"), deleteSchoolController);
 
 export default router;
